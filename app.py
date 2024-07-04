@@ -1,20 +1,26 @@
-from dash import Dash, html, dcc, callback, Output, Input
+from dash import Dash, html, dcc, callback, Output, Input, State
 import dash_bootstrap_components as dbc
 import plotly.express as px
 from plotly.offline import plot
 from plotly.subplots import make_subplots
-from scipy import signal
 import statsmodels.api as sm
 import pandas as pd
 import plotly.graph_objects as go
 
 
-df = pd.read_csv('data/arcsys_world_tour.csv')
+df = pd.read_csv('data/arcsys_world_tour_70.csv')
+df_match_stats = pd.read_csv('data/arcsys_world_tour_70_match_stats.csv')
+
 df.set_index(['tournament_round', 'set_index', 'round_index'], inplace=True)
 df.sort_index(level=['tournament_round', 'set_index', 'round_index'], inplace=True)
+df_match_stats.set_index(['tournament_round', 'set_index', 'round_index'], inplace=True)
+df_match_stats.sort_index(level=['tournament_round', 'set_index', 'round_index'], inplace=True)
 
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
-app = Dash(__name__, suppress_callback_exceptions = True, external_stylesheets=[dbc.themes.JOURNAL, dbc_css])
+w3schools = 'https://www.w3schools.com/w3css/4/w3.css'
+external_stylesheets = [dbc.themes.JOURNAL, dbc_css, w3schools]
+
+app = Dash(__name__, suppress_callback_exceptions = True, external_stylesheets=external_stylesheets)
 tournament_round_mapping = {
     'gf' : "Grand Finals",
     'lf1': "Losers Final",
@@ -38,7 +44,38 @@ dropdowns = html.Div([
 ])
 
 controls = dbc.Card([dropdowns])
-graphs = dbc.Card([dbc.Spinner(dcc.Graph(id='graph-content', style={'height': '90vh', 'visibility': 'hidden'}), color="primary")])
+graphs = dbc.Card([dbc.Spinner(dcc.Graph(id='pred_graph', style={'height': '80vh', 'visibility': 'hidden'}), color="primary")])
+
+pred_graph_tab = dbc.Card(
+    dbc.CardBody([
+        dbc.Row([
+            dbc.Col([html.Div(id='p1_health_bar', className='p1_health bar',style={"--p":"100%"})], width=5),
+                #dbc.Label("Health", className="bar_label"),
+            dbc.Label("Health", className="bar_label"),
+            dbc.Col([html.Div(id='p2_health_bar', className='p2_health bar',style={"--p":"100%"})], width=5),
+        ], justify='center'),
+        dbc.Row([
+            dbc.Col([html.Div(id='p1_burst_bar', className='p1_burst bar',style={"--p":"0%"})], width=5),
+            dbc.Label("Burst", className="bar_label"),
+            dbc.Col([html.Div(id='p2_burst_bar', className='p2_burst bar',style={"--p":"00%"})], width=5),
+        ], justify='center'),
+        dbc.Row([
+            dbc.Col([html.Div(id='p1_tension_bar', className='p1_tension bar',style={"--p":"100%"})], width=5),
+            dbc.Label("Tension", className="bar_label"),
+            dbc.Col([html.Div(id='p2_tension_bar', className='p2_tension bar',style={"--p":"100%"})], width=5),
+        ], justify='center'),
+        dbc.Col([
+            graphs
+        ])
+    ])
+)
+
+match_stats = dbc.Card(
+    dbc.CardBody([
+        dcc.Graph(id='burst_graph', style={'height': '30vh', 'visibility': 'hidden'})
+    ])
+)
+
 app.layout = dbc.Container(
     [
         html.H1(children='Guilty Gear -Strive- Match Predictions', style={'textAlign':'center'}, className="dbc"),
@@ -47,9 +84,13 @@ app.layout = dbc.Container(
                 controls,
             ], width=2),
             dbc.Col([
-                graphs
-            ])
+                dbc.Tabs([
+                    dbc.Tab(pred_graph_tab, label="Match Prediction"),
+                    dbc.Tab(match_stats, label="Match Stats ")
+                ])
+            ], width={"size": 10}),
         ])
+
     ],
     fluid=True,
     className="dbc"
@@ -70,65 +111,93 @@ def set_initial_set_value(options):
     return options[0]
 
 @app.callback(
-    [Output('graph-content', 'figure'),
-    Output('graph-content', 'style')],
+    [Output('pred_graph', 'figure'),
+    Output('pred_graph', 'style'),
+    Output('burst_graph', 'figure'),
+    Output('burst_graph', 'style')],
     [Input('tr-selection', 'value'),
      Input('set-selection', 'value'),]
 )
-def update_graph(tr, set):
+def update_graph(tr, set_num):
    #print(ctx.triggered)
-    dff = df.loc[(tr, set)]
-    fig = create_pred_graph(dff)
-    return fig,  {'height': '90vh', 'visibility': 'visible'}
+    dff = df.loc[(tr, set_num)]
+    match_stats_dff = df_match_stats.loc[(tr, set_num)]
+    fig = create_pred_graph(dff, tr)
+    match_stats_fig = create_match_stats_graph(match_stats_dff, dff, tr)
+    return fig,  {'height': '90vh', 'visibility': 'visible'}, match_stats_fig, {'height': '30vh', 'visibility': 'visible'},
 
-def create_pred_graph(dff):
-    num_rounds = len(dff.index.unique(level='round_index'))
-    fig = make_subplots(rows = 2, cols=num_rounds, specs=[[{}] * num_rounds, [{"colspan": num_rounds}] + [None] * (num_rounds-1)])
-    #figures = []
-    #for i in range(num_rounds):
-    curr_round_df = dff
-    p1_df = pd.DataFrame(curr_round_df[["time", "p1_player_name", "p1_health", "p1_tension","p1_burst", "p1_counter", "p1_curr_damaged", "p1_round_count", "current_round_pred", "current_set_pred"]])
-    p1_df.rename(columns={"p1_player_name": "player_name", "p1_health":"health", "p1_tension": "tension","p1_burst":"burst", "p1_counter":"counter", "p1_round_count":"rounds_won", "p1_curr_damaged": "damaged"}, inplace=True)
-    p2_df = pd.DataFrame(curr_round_df[["time", "p2_player_name", "p2_health", "p2_tension", "p2_burst", "p2_counter", "p2_curr_damaged", "p2_round_count"]])
-    p2_df.rename(columns={"p2_player_name": "player_name", "p2_health":"health", "p2_tension":"tension", "p2_burst":"burst", "p2_counter":"counter", "p2_round_count": "rounds_won", "p2_curr_damaged": "damaged"}, inplace=True)
-    p2_df["current_round_pred"] = 1-curr_round_df.loc[:,"current_round_pred"]
-    p2_df["current_set_pred"] = 1-curr_round_df.loc[:,"current_set_pred"]
-    p1_df['set_graph_index'] = p1_df.reset_index().index
-    p2_df['set_graph_index'] = p2_df.reset_index().index
+@app.callback(
+    Output('p1_health_bar', 'style'),
+    Output('p2_health_bar', 'style'),
+    Output('p1_burst_bar', 'style'),
+    Output('p2_burst_bar', 'style'),
+    Output('p1_tension_bar', 'style'),
+    Output('p2_tension_bar', 'style'),
+    Input('pred_graph', 'hoverData'),
+    State('tr-selection', 'value'),
+    State('set-selection', 'value')
+)
+def display_hover_data(hoverData, tr, set_num,):
+    p1_health_style={}
+    p2_health_style={}
+    p1_burst_style={}
+    p2_burst_style={}
+    p1_tension_style={}
+    p2_tension_style={}
+    if tr != None and set_num != None:
+        dff = df.loc[(tr, set_num)]
+        curr_row = dff.query(f'set_time == {hoverData['points'][0]['x']}')
+        p1_health_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p1_health"].values[0])}%'
+        p2_health_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p2_health"].values[0])}%'
+        p1_burst_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p1_burst"].values[0])}%'
+        p2_burst_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p2_burst"].values[0])}%'
+        p1_tension_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p1_tension"].values[0])}%'
+        p2_tension_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p2_tension"].values[0])}%'
+    return p1_health_style, p2_health_style, p1_burst_style, p2_burst_style, p1_tension_style, p2_tension_style
 
-    curr_round_df = pd.concat([p1_df, p2_df])
-    curr_round_df['current_round_pred'] = signal.savgol_filter(curr_round_df["current_round_pred"], 30, 3)
-    curr_round_df['current_set_pred'] = signal.savgol_filter(curr_round_df["current_set_pred"], 30, 3)
+def create_pred_graph(dff, tr):
+    p1_player_name = dff['p1_player_name'].unique().tolist()[0]
+    p2_player_name = dff['p2_player_name'].unique().tolist()[0]
 
-    round_fig = px.line(curr_round_df.reset_index(), template='plotly_dark', x="time", y='current_round_pred', hover_name="player_name", color='player_name', facet_col="round_index",line_shape='spline',hover_data={
-        'player_name': False,
-        'time': False,
-        'current_round_pred': ':.2f',
-        'health': ':.2f',
-        'tension': ':.2f',
-        'burst': ':.2f',
-        'counter': True,
-        'damaged': True
-    })
+    layout = dict(hoversubplots='axis',
+        title=f'{tournament_round_mapping[tr]} : {p1_player_name} vs {p2_player_name}',
+        hovermode="x",
+        template='plotly_dark',
+        grid=dict(rows=2, columns=1)
+    )
 
-    for j in range(2):
-        for i in range(num_rounds):
-            fig.add_trace(round_fig["data"][j*num_rounds + i], row=1, col=i+1)
+    current_round_pred_smooth = sm.nonparametric.lowess(dff['current_round_pred'], dff['set_time'], frac=0.05)[:, 1]
+    current_set_pred_smooth = sm.nonparametric.lowess(dff['current_set_pred'], dff['set_time'], frac=0.05)[:, 1]
+    data = [
+        go.Scatter(x=dff['set_time'], y=current_round_pred_smooth, xaxis='x', yaxis='y1', name=p1_player_name, mode='lines', legendgroup=p1_player_name, line=dict(color='blue')),
+        go.Scatter(x=dff['set_time'], y=1-current_round_pred_smooth, xaxis='x', yaxis='y1', name=p2_player_name, mode='lines', legendgroup=p2_player_name, line=dict(color='red')),
+        go.Scatter(x=dff['set_time'], y=current_set_pred_smooth, xaxis='x', yaxis='y2', name=p1_player_name, mode='lines', legendgroup=p1_player_name, showlegend=False, line=dict(color='blue')),
+        go.Scatter(x=dff['set_time'], y=1-current_set_pred_smooth, xaxis='x', yaxis='y2', name=p2_player_name, mode='lines', legendgroup=p2_player_name, showlegend=False, line=dict(color='red'))
+    ]
+    fig = go.Figure(data=data, layout=layout)
 
+    final_round_times  = dff.groupby(['round_index']).tail(1)
+    for p2_round_win_time in final_round_times.loc[final_round_times['p1_round_win']==False,'set_time'].values:
+        fig.add_vline(x=p2_round_win_time, line_width=2, line_color='red', annotation_text=f'{p2_player_name} wins round', annotation_position="top right", row='all',col='all')
 
-    set_fig = px.line(curr_round_df.reset_index(), template='plotly_dark', x='set_graph_index', y='current_set_pred', hover_name="player_name", color='player_name',hover_data={
-        'player_name': False,
-        'set_graph_index': False,
-        'time': False,
-        'current_set_pred': ':.2f',
-        'burst': ':.2f',
-        'rounds_won': True
-    })
+    for p1_round_win_time in final_round_times.loc[final_round_times['p1_round_win']==True,'set_time'].values:
+        fig.add_vline(x=p1_round_win_time, line_width=2, line_color='blue', annotation_text=f'{p1_player_name} wins round', annotation_position="top right", col='all')
+    return fig
 
-    for sub_fig in range(len(set_fig["data"])):
-        fig.add_trace(set_fig["data"][sub_fig], row=2, col=1)
-
-    fig.update_layout(template='plotly_dark', hovermode="x unified",)
+def create_match_stats_graph(match_stats_dff, dff, tr):
+    p1_player_name = dff['p1_player_name'].unique().tolist()[0]
+    p2_player_name = dff['p2_player_name'].unique().tolist()[0]
+    print(match_stats_dff['p1_burst_count'].sum())
+    layout = dict(template='plotly_dark',
+                  annotations=[dict(text="Burst Count",  x=0.5, y=0.5, font_size=20, showarrow=False)])
+    data = go.Pie(labels=[p2_player_name, p1_player_name],
+                  values=[ match_stats_dff['p2_burst_count'].sum(), match_stats_dff['p1_burst_count'].sum(),],
+                  direction='clockwise',
+                  hole=0.5,
+                  name='Burst Count',
+                  sort=False)
+    fig = go.Figure(data=data, layout=layout)
+    fig.update_traces(marker=dict(colors=['red', 'blue'], line=dict(color='#000000', width=0.5)), hoverinfo='label+value', textinfo='label+value')
     return fig
 
 if __name__ == '__main__':

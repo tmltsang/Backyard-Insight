@@ -1,0 +1,61 @@
+.bar {
+    height:24px;
+    width:95%;
+    margin-bottom: 15px;
+    background-repeat:no-repeat;
+    background-size:var(--p,50%) 100%,100% 100%;
+}
+.p1_health {
+    float:right;
+    background-image:
+     linear-gradient(#ccc,#ccc),
+     linear-gradient(to right,  #f3e1bc , #f29488 );
+    background-position:left, right;
+}
+
+.p2_health {
+    background-image:
+     linear-gradient(#ccc,#ccc),
+     linear-gradient(to left,  #f3e1bc , #f29488 );
+    background-position:right, left;
+}
+
+.p1_burst {
+    width:50%;
+    float:right;
+    background-image:
+     linear-gradient(#ccc,#ccc),
+     linear-gradient(to right,  #0a80ce , #1ca5e7 );
+    background-position:left, right;
+}
+
+.p2_burst {
+    width:50%;
+    background-image:
+     linear-gradient(#ccc,#ccc),
+     linear-gradient(to left,  #0a80ce , #1ca5e7 );
+    background-position:right, left;
+}
+
+.p1_tension {
+    float:right;
+    background-image:
+     linear-gradient(#ccc,#ccc),
+     linear-gradient(to right,  #ffff9d , #ffffff );
+    background-size:var(--p,50%) 100%,100% 100%;
+    background-position:left, right;
+}
+
+.p2_tension {
+    background-image:
+     linear-gradient(#ccc,#ccc),
+     linear-gradient(to left,  #ffff9d , #ffffff );
+    background-position:right, left;
+}
+
+.bar_label {
+    display: block;
+    text-align: center;
+    width:5%;
+    line-height: 150%;
+}
