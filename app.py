@@ -23,6 +23,8 @@ w3schools = 'https://www.w3schools.com/w3css/4/w3.css'
 external_stylesheets = [dbc.themes.JOURNAL, dbc_css, w3schools]
 
 app = Dash(__name__, suppress_callback_exceptions = True, external_stylesheets=external_stylesheets)
+server = app.server
+
 tournament_round_mapping = {
     'gf' : "Grand Finals",
     'lf1': "Losers Final",
@@ -127,7 +129,6 @@ def set_initial_set_value(options):
      Input('set-selection', 'value'),]
 )
 def update_graph(tr, set_num):
-   #print(ctx.triggered)
     dff = df.loc[('arcsys_world_tour', tr, set_num)]
     match_stats_dff = df_match_stats.loc[('arcsys_world_tour', tr, set_num)]
     fig = create_pred_graph(dff, tr)
@@ -158,7 +159,7 @@ def display_hover_data(hoverData, tr, set_num,):
     p2_tension_style={}
     if tr != None and set_num != None:
         dff = df.loc[('arcsys_world_tour', tr, set_num)]
-        curr_row = dff.query(f'set_time == {hoverData['points'][0]['x']}')
+        curr_row = dff.query(f'set_time == {hoverData["points"][0]["x"]}')
         p1_health_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p1_health"].values[0])}%'
         p2_health_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p2_health"].values[0])}%'
         p1_burst_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p1_burst"].values[0])}%'
@@ -199,8 +200,6 @@ def create_pred_graph(dff, tr):
 def create_match_stats_graph(match_stats_dff, dff, stat_col_name, graph_title):
     p1_player_name = dff['p1_player_name'].unique().tolist()[0]
     p2_player_name = dff['p2_player_name'].unique().tolist()[0]
-    print(dff)
-    print(match_stats_dff)
     rounds_index = match_stats_dff.index.unique(level='round_index')
     subplot_titles = ['Full Match', 'Round 1', 'Round 2', 'Round 3']
     num_graphs = len(rounds_index)+1
@@ -210,7 +209,6 @@ def create_match_stats_graph(match_stats_dff, dff, stat_col_name, graph_title):
     annotations = list(fig.layout.annotations)
 
     p1_set_win = dff.loc[:, 'p1_set_win'].head(1).item()
-    print(p1_set_win)
     shape=["+", ""] if p1_set_win else ["", "+"]
     data = go.Pie(labels=[p2_player_name, p1_player_name],
                 values=[p2_match_stat, p1_match_stat],
@@ -229,7 +227,6 @@ def create_match_stats_graph(match_stats_dff, dff, stat_col_name, graph_title):
             p2_stat = round(match_stats_dff.loc[round_num,f'p2_{stat_col_name}'].sum(), 2)
 
             p1_round_win = dff.loc[(round_num), 'p1_round_win'].head(1).item()
-            print(p1_round_win)
             shape=["+", ""] if p1_round_win else ["", "+"]
             data = go.Pie(labels=[p2_player_name, p1_player_name],
                         values=[ p2_stat, p1_stat,],
@@ -249,4 +246,4 @@ def create_match_stats_graph(match_stats_dff, dff, stat_col_name, graph_title):
     return fig
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=8080)

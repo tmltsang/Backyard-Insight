@@ -15,7 +15,6 @@ class GGDataClient():
         return df
 
     def get_all_match_stats(self):
-        print(self.config['COLLECTION_MATCH_STATS'])
         df = pd.DataFrame(self.client.find(self.config['COLLECTION_MATCH_STATS']))
         del df['_id']
         return df
