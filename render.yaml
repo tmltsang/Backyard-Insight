@@ -1,0 +1,13 @@
+services:
+- type: web
+  name: ggstrive_tournament_dashboard
+  runtime: docker
+  repo: https://github.com/tmltsang/ggstrive_tournament_dashboard
+  plan: free
+  envVars:
+  - key: .env
+    sync: false
+  region: oregon
+  dockerContext: .
+  dockerfilePath: ./Dockerfile
+version: "1"
