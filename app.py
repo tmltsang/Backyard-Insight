@@ -1,22 +1,21 @@
 from dash import Dash, html, dcc, callback, Output, Input, State
 import dash_bootstrap_components as dbc
-import plotly.express as px
-from plotly.offline import plot
-from plotly.subplots import make_subplots
-import statsmodels.api as sm
-import pandas as pd
-import plotly.graph_objects as go
+from graphing import graph
 from database.gg_data_client import GGDataClient
+import json
 
-data_client = GGDataClient()
+data_client = GGDataClient(local=True)
 df = data_client.get_all_matches()
 df_match_stats = data_client.get_all_match_stats()
+df_asuka_stats = data_client.get_all_asuka_data()
 
 full_index = ['tournament', 'tournament_round', 'set_index', 'round_index']
 df.set_index(full_index, inplace=True)
 df.sort_index(level=full_index, inplace=True)
 df_match_stats.set_index(full_index, inplace=True)
 df_match_stats.sort_index(level=full_index, inplace=True)
+df_asuka_stats.set_index(['tournament', 'tournament_round', 'set_index', 'round_index', 'player_side'], inplace=True)
+df_asuka_stats.sort_index(level=['tournament', 'tournament_round', 'set_index', 'round_index', 'player_side'], inplace=True)
 
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 w3schools = 'https://www.w3schools.com/w3css/4/w3.css'
@@ -37,7 +36,7 @@ tournament_round_mapping = {
     'wf1': "Winners Final",
     'wsf1': "Winners Semi-Final",
     'wsf2': "Winners Semi-Final",
-    }
+}
 
 
 dropdowns = html.Div([
@@ -68,7 +67,7 @@ pred_graph_tab = dbc.Card(
             dbc.Label("Tension", className="bar_label"),
             dbc.Col([html.Div(id='p2_tension_bar', className='p2_tension bar',style={"--p":"100%"})], width=5),
         ], justify='center'),
-        dbc.Col([
+        dbc.Row([
             graphs
         ])
     ])
@@ -82,6 +81,13 @@ match_stats = dbc.Card(
     ])
 )
 
+asuka_stats = dbc.Card(
+    dbc.CardBody([
+        html.Div(id="spells"),
+        dbc.Row([dcc.Graph(id='asuka_graph', style={'height': '50vh'})]),
+    ])
+)
+
 app.layout = dbc.Container(
     [
         html.H1(children='Guilty Gear -Strive- Match Predictions', style={'textAlign':'center'}, className="dbc"),
@@ -91,9 +97,10 @@ app.layout = dbc.Container(
             ], width=2),
             dbc.Col([
                 dbc.Tabs([
-                    dbc.Tab(pred_graph_tab, label="Match Prediction"),
-                    dbc.Tab(match_stats, label="Match Stats ")
-                ])
+                    dbc.Tab(pred_graph_tab, id="pred_tab", tab_id="pred_tab", label="Match Prediction"),
+                    dbc.Tab(match_stats, id="match_tab", tab_id="match_tab", label="Match Stats"),
+                    dbc.Tab(asuka_stats, id="asuka_tab", tab_id="asuka_tab", label="Asuka Spells", tab_style={'display': 'none'})
+                ], id="tabs", active_tab="pred_tab")
             ], width={"size": 10}),
         ])
 
@@ -106,7 +113,7 @@ app.layout = dbc.Container(
     Output('set-selection', 'options'),
     [Input('tr-selection', 'value')]
 )
-def update_date_dropdown(value):
+def update_round_dropdown(value):
     return df.loc[('arcsys_world_tour', value)].index.unique(level='set_index')
 
 @app.callback(
@@ -124,20 +131,43 @@ def set_initial_set_value(options):
     Output('burst_bar_graph', 'figure'),
     Output('burst_bar_graph', 'style'),
     Output('tension_graph', 'figure'),
-    Output('tension_graph', 'style')],
+    Output('tension_graph', 'style'),
+    Output('asuka_tab', 'tab_style'),
+    Output('asuka_graph', 'figure'),
+    Output('tabs', 'active_tab')],
     [Input('tr-selection', 'value'),
-     Input('set-selection', 'value'),]
+    Input('set-selection', 'value'),],
+    [State('tabs', 'active_tab'),],
 )
-def update_graph(tr, set_num):
+def update_graph(tr, set_num, active_tab):
     dff = df.loc[('arcsys_world_tour', tr, set_num)]
     match_stats_dff = df_match_stats.loc[('arcsys_world_tour', tr, set_num)]
-    fig = create_pred_graph(dff, tr)
-    match_stats_style = {'height': '30vh', 'visibility': 'visible'}
-    burst_match_stats_fig = create_match_stats_graph(match_stats_dff, dff, 'burst_count', 'Psych Burst Count')
-    burst_bar_match_stats_fig = create_match_stats_graph(match_stats_dff, dff, 'burst_use', 'Burst Bar Used')
-    tension_match_stats_fig = create_match_stats_graph(match_stats_dff, dff, 'tension_use', 'Tension Used')
+    asuka_stats_dff = None
+    asuka_tab_style = {'display': 'none'}
+    p1_player_name = dff['p1_player_name'].iat[0]
+    p2_player_name = dff['p2_player_name'].iat[0]
+    asuka_fig = graph.placeholder_graph()
 
-    return fig,  {'height': '90vh', 'visibility': 'visible'}, burst_match_stats_fig, match_stats_style, burst_bar_match_stats_fig, match_stats_style, tension_match_stats_fig, match_stats_style
+    p1_set_win = dff['p1_set_win'].iat[0]
+    p1_round_win = dff['p1_round_win'].iat[0]
+    if df_asuka_stats.index.isin([('arcsys_world_tour', tr, set_num)]).any():
+        asuka_stats_dff = df_asuka_stats.loc[('arcsys_world_tour', tr, set_num)]
+        asuka_tab_style = {}
+        asuka_fig = graph.create_asuka_graph(asuka_stats_dff, p1_player_name, p2_player_name)
+    else:
+        if active_tab == 'asuka_tab':
+            active_tab = 'pred_tab'
+
+    fig = graph.create_pred_graph(dff, p1_player_name, p2_player_name)
+    match_stats_style = {'height': '30vh', 'visibility': 'visible'}
+    burst_match_stats_fig = graph.create_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'burst_count', 'Psych Burst Count')
+    burst_bar_match_stats_fig = graph.create_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'burst_use', 'Burst Bar Used')
+    tension_match_stats_fig = graph.create_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'tension_use', 'Tension Used')
+    return fig,  {'height': '90vh', 'visibility': 'visible'},\
+            burst_match_stats_fig, match_stats_style,\
+            burst_bar_match_stats_fig, match_stats_style,\
+            tension_match_stats_fig, match_stats_style,\
+            asuka_tab_style, asuka_fig, active_tab
 
 @app.callback(
     Output('p1_health_bar', 'style'),
@@ -168,82 +198,29 @@ def display_hover_data(hoverData, tr, set_num,):
         p2_tension_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p2_tension"].values[0])}%'
     return p1_health_style, p2_health_style, p1_burst_style, p2_burst_style, p1_tension_style, p2_tension_style
 
-def create_pred_graph(dff, tr):
-    p1_player_name = dff['p1_player_name'].unique().tolist()[0]
-    p2_player_name = dff['p2_player_name'].unique().tolist()[0]
-
-    layout = dict(hoversubplots='axis',
-        title=f'{tournament_round_mapping[tr]} : {p1_player_name} vs {p2_player_name}',
-        hovermode="x",
-        template='plotly_dark',
-        grid=dict(rows=2, columns=1)
-    )
-
-    current_round_pred_smooth = sm.nonparametric.lowess(dff['current_round_pred'], dff['set_time'], frac=0.05)[:, 1]
-    current_set_pred_smooth = sm.nonparametric.lowess(dff['current_set_pred'], dff['set_time'], frac=0.05)[:, 1]
-    data = [
-        go.Scatter(x=dff['set_time'], y=current_round_pred_smooth, xaxis='x', yaxis='y1', name=p1_player_name, mode='lines', legendgroup=p1_player_name, line=dict(color='blue')),
-        go.Scatter(x=dff['set_time'], y=1-current_round_pred_smooth, xaxis='x', yaxis='y1', name=p2_player_name, mode='lines', legendgroup=p2_player_name, line=dict(color='red')),
-        go.Scatter(x=dff['set_time'], y=current_set_pred_smooth, xaxis='x', yaxis='y2', name=p1_player_name, mode='lines', legendgroup=p1_player_name, showlegend=False, line=dict(color='blue')),
-        go.Scatter(x=dff['set_time'], y=1-current_set_pred_smooth, xaxis='x', yaxis='y2', name=p2_player_name, mode='lines', legendgroup=p2_player_name, showlegend=False, line=dict(color='red'))
-    ]
-    fig = go.Figure(data=data, layout=layout)
-
-    final_round_times  = dff.groupby(['round_index']).tail(1)
-    for p2_round_win_time in final_round_times.loc[final_round_times['p1_round_win']==False,'set_time'].values:
-        fig.add_vline(x=p2_round_win_time, line_width=2, line_color='red', annotation_text=f'{p2_player_name} wins round', annotation_position="top right", row='all',col='all')
-
-    for p1_round_win_time in final_round_times.loc[final_round_times['p1_round_win']==True,'set_time'].values:
-        fig.add_vline(x=p1_round_win_time, line_width=2, line_color='blue', annotation_text=f'{p1_player_name} wins round', annotation_position="top right", col='all')
-    return fig
-
-def create_match_stats_graph(match_stats_dff, dff, stat_col_name, graph_title):
-    p1_player_name = dff['p1_player_name'].unique().tolist()[0]
-    p2_player_name = dff['p2_player_name'].unique().tolist()[0]
-    rounds_index = match_stats_dff.index.unique(level='round_index')
-    subplot_titles = ['Full Match', 'Round 1', 'Round 2', 'Round 3']
-    num_graphs = len(rounds_index)+1
-    fig = make_subplots(1, num_graphs, subplot_titles=subplot_titles[:num_graphs], specs=[[{'type':'domain'}]*(num_graphs)])
-    p1_match_stat = round(match_stats_dff[f'p1_{stat_col_name}'].sum(), 2)
-    p2_match_stat = round(match_stats_dff[f'p2_{stat_col_name}'].sum(), 2)
-    annotations = list(fig.layout.annotations)
-
-    p1_set_win = dff.loc[:, 'p1_set_win'].head(1).item()
-    shape=["+", ""] if p1_set_win else ["", "+"]
-    data = go.Pie(labels=[p2_player_name, p1_player_name],
-                values=[p2_match_stat, p1_match_stat],
-                direction='clockwise',
-                hole=0.3,
-                name=graph_title,
-                sort=False,
-                scalegroup='one',
-                marker=dict(colors=['red', 'blue'], pattern=dict(shape=shape),))
-    fig.add_trace(data, row=1,col=1)
-    if p1_match_stat + p2_match_stat == 0:
-        annotations.append(dict(text=f'No {graph_title} in the match', x=0.5, y=0.5, xanchor='center', font_size=20, showarrow=False))
+@app.callback(
+    Output('spells', 'children'),
+    Input('asuka_graph', 'hoverData')
+)
+def display_asuka_hover_data(hoverData):
+    if hoverData != None:
+        rows = [dbc.Row(), dbc.Row()]
+        for trace in hoverData["points"]:
+            player_data = trace["customdata"]
+            spells = []
+            for spell in player_data[:4]:
+                opactiy = 1.0 if spell != 'used_spell' else 0.0
+                src = app.get_asset_url(f'images/spells/{spell}.png')
+                style={"opacity": opactiy}
+                spells.append(html.Img(src=src, style=style, className='spell'))
+            row_index = 0
+            if player_data[4] == "p2":
+                row_index = 1
+            spells=[html.Div(spells, className="spell_background")]
+            rows[row_index] = dbc.Row([dbc.Label(f"{player_data[5]}'s spells: ", className='spell_label label_start')] + spells + [dbc.Label(f"{trace['y']}%", className='spell_label label_end')], justify='center', className="")
+        return rows
     else:
-        for round_num in rounds_index:
-            p1_stat = round(match_stats_dff.loc[round_num,f'p1_{stat_col_name}'].sum(), 2)
-            p2_stat = round(match_stats_dff.loc[round_num,f'p2_{stat_col_name}'].sum(), 2)
-
-            p1_round_win = dff.loc[(round_num), 'p1_round_win'].head(1).item()
-            shape=["+", ""] if p1_round_win else ["", "+"]
-            data = go.Pie(labels=[p2_player_name, p1_player_name],
-                        values=[ p2_stat, p1_stat,],
-                        direction='clockwise',
-                        hole=0.3,
-                        name=graph_title,
-                        scalegroup='one',
-                        sort=False,
-                        marker=dict(colors=['red', 'blue'],pattern=dict(shape=shape),),)
-
-            fig.add_trace(data, row=1, col=round_num+2)
-            if p1_stat + p2_stat == 0:
-                annotations.append(dict(text=f'No {graph_title}', x=annotations[round_num+1].x, y=0.5, xanchor='center', xref='paper', font_size=20, showarrow=False))
-
-    fig.update_traces(marker=dict(colors=['red', 'blue']), textposition='inside', hoverinfo='label+value', textinfo='label+value')
-    fig.update_layout(title_text=graph_title, showlegend=False, template='plotly_dark', uniformtext_mode='hide', uniformtext_minsize=10, annotations=annotations)
-    return fig
+        return []
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=8080)

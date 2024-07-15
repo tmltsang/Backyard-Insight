@@ -59,3 +59,34 @@
     width:5%;
     line-height: 150%;
 }
+
+.spell_background {
+    background-image: url(images/spells/spell_background.png);
+    background-repeat: no-repeat;
+    background-position: bottom;
+    background-size: 10% 100%;
+    margin-bottom: 1%;
+    position: relative;
+    box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
+}
+
+.spell {
+    width: 2.5%;
+    display: block;
+    height: auto;
+    padding:0;
+}
+
+.spell_label{
+    display: flex;
+    align-items: center;
+    width:15%
+}
+
+.label_start{
+    justify-content: end;
+}
+
+.label_end{
+    justify-content: start;
+}
