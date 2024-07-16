@@ -62,16 +62,22 @@
 
 .spell_background {
     background-image: url(images/spells/spell_background.png);
+    padding: 0;
     background-repeat: no-repeat;
     background-position: bottom;
-    background-size: 10% 100%;
+    background-size: 100% 100%;
     margin-bottom: 1%;
     position: relative;
-    box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
+    box-shadow: var(--colour, red) 0px 5px 10px 3px;
+    width: 10%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .spell {
-    width: 2.5%;
+    width: 25%;
     display: block;
     height: auto;
     padding:0;

@@ -24,6 +24,9 @@ external_stylesheets = [dbc.themes.JOURNAL, dbc_css, w3schools]
 app = Dash(__name__, suppress_callback_exceptions = True, external_stylesheets=external_stylesheets)
 server = app.server
 
+colours = {'p1': 'red',
+           'p2': 'blue'}
+
 tournament_round_mapping = {
     'gf' : "Grand Finals",
     'lf1': "Losers Final",
@@ -176,26 +179,27 @@ def update_graph(tr, set_num, active_tab):
     Output('p2_burst_bar', 'style'),
     Output('p1_tension_bar', 'style'),
     Output('p2_tension_bar', 'style'),
-    Input('pred_graph', 'hoverData'),
-    State('tr-selection', 'value'),
-    State('set-selection', 'value')
+    Input('pred_graph', 'hoverData')
 )
-def display_hover_data(hoverData, tr, set_num,):
+def display_hover_data(hoverData):
     p1_health_style={}
     p2_health_style={}
     p1_burst_style={}
     p2_burst_style={}
     p1_tension_style={}
     p2_tension_style={}
-    if tr != None and set_num != None:
-        dff = df.loc[('arcsys_world_tour', tr, set_num)]
-        curr_row = dff.query(f'set_time == {hoverData["points"][0]["x"]}')
-        p1_health_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p1_health"].values[0])}%'
-        p2_health_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p2_health"].values[0])}%'
-        p1_burst_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p1_burst"].values[0])}%'
-        p2_burst_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p2_burst"].values[0])}%'
-        p1_tension_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p1_tension"].values[0])}%'
-        p2_tension_style["--p"] = f'{100-int(100 * curr_row.loc[:,"p2_tension"].values[0])}%'
+    if hoverData != None:
+        for point in hoverData["points"]:
+            if "customdata" in point.keys():
+                data = point['customdata']
+                if data[8] == "p1":
+                    p1_health_style["--p"] = f'{100-int(100 * data[0])}%'
+                    p1_burst_style["--p"] = f'{100-int(100 * data[2])}%'
+                    p1_tension_style["--p"] = f'{100-int(100 * data[1])}%'
+                else:
+                    p2_health_style["--p"] = f'{100-int(100 * data[0])}%'
+                    p2_burst_style["--p"] = f'{100-int(100 * data[2])}%'
+                    p2_tension_style["--p"] = f'{100-int(100 * data[1])}%'
     return p1_health_style, p2_health_style, p1_burst_style, p2_burst_style, p1_tension_style, p2_tension_style
 
 @app.callback(

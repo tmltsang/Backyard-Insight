@@ -16,10 +16,16 @@ def create_pred_graph(dff, p1_player_name, p2_player_name):
         grid=dict(rows=2, columns=1)
     )
 
+    custom_data_cols = ['health', 'tension', 'burst', 'counter', 'curr_damaged', 'round_count', 'name', 'player_name']
+    cols = {}
+    for player in ["p1", "p2"]:
+        cols[player] = pd.DataFrame(dff[[player+"_"+col for col in custom_data_cols]])
+        cols[player]["side"] = player
+
     current_set_pred_smooth = sm.nonparametric.lowess(dff['current_set_pred'], dff['set_time'], frac=0.1)[:, 1]
     data = [
-        go.Scatter(x=dff['set_time'], y=current_set_pred_smooth, xaxis='x', yaxis='y2', name=p1_player_name, mode='lines', legendgroup=p1_player_name, showlegend=False, line=dict(color=colours['p1'])),
-        go.Scatter(x=dff['set_time'], y=1-current_set_pred_smooth, xaxis='x', yaxis='y2', name=p2_player_name, mode='lines', legendgroup=p2_player_name, showlegend=False, line=dict(color=colours['p2']))
+        go.Scatter(x=dff['set_time'], y=current_set_pred_smooth, xaxis='x', yaxis='y2', name=p1_player_name, mode='lines', customdata=cols['p1'], legendgroup=p1_player_name, showlegend=False, line=dict(color=colours['p1'])),
+        go.Scatter(x=dff['set_time'], y=1-current_set_pred_smooth, xaxis='x', yaxis='y2', name=p2_player_name, mode='lines', customdata=cols['p2'], legendgroup=p2_player_name, showlegend=False, line=dict(color=colours['p2']))
         ]
     for round_index in dff.index.unique(level='round_index'):
         round_dff = dff.loc[round_index]
