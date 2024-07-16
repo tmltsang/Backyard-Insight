@@ -4,7 +4,7 @@ from graphing import graph
 from database.gg_data_client import GGDataClient
 import json
 
-data_client = GGDataClient(local=True)
+data_client = GGDataClient()
 df = data_client.get_all_matches()
 df_match_stats = data_client.get_all_match_stats()
 df_asuka_stats = data_client.get_all_asuka_data()
@@ -220,8 +220,8 @@ def display_asuka_hover_data(hoverData):
             row_index = 0
             if player_data[4] == "p2":
                 row_index = 1
-            spells=[html.Div(spells, className="spell_background")]
-            rows[row_index] = dbc.Row([dbc.Label(f"{player_data[5]}'s spells: ", className='spell_label label_start')] + spells + [dbc.Label(f"{trace['y']}%", className='spell_label label_end')], justify='center', className="")
+            spells=[html.Div(spells, className="spell_background", style={"--colour": colours[player_data[4]]})]
+            rows[row_index] = dbc.Row([dbc.Label(f"{player_data[5]}'s spells: ", className='spell_label label_start')] + spells + [dbc.Label(f"{trace['y']}%", className='spell_label label_end')], justify='center')
         return rows
     else:
         return []
