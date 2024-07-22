@@ -2,7 +2,8 @@ from dash import Dash, html, dcc, callback, Output, Input, State
 import dash_bootstrap_components as dbc
 from graphing import graph
 from database.gg_data_client import GGDataClient
-import json
+from constants import *
+import copy
 
 data_client = GGDataClient()
 df = data_client.get_all_matches()
@@ -24,52 +25,73 @@ external_stylesheets = [dbc.themes.JOURNAL, dbc_css, w3schools]
 app = Dash(__name__, suppress_callback_exceptions = True, external_stylesheets=external_stylesheets)
 server = app.server
 
-colours = {'p1': 'red',
-           'p2': 'blue'}
+# colours = {'p1': 'red',
+#            'p2': 'blue'}
 
-tournament_round_mapping = {
-    'gf' : "Grand Finals",
-    'lf1': "Losers Final",
-    'lqf1': "Losers Quarter-Final",
-    'lqf2': "Losers Quarter-Final",
-    'lr1': "Losers Round One",
-    'lr2': "Losers Round One",
-    'lsf1': "Losers Semi-Final",
-    'lsf2': "Losers Semi-Final",
-    'wf1': "Winners Final",
-    'wsf1': "Winners Semi-Final",
-    'wsf2': "Winners Semi-Final",
-}
+# tournament_round_mapping = {
+#     'gf' : "Grand Finals",
+#     'lf1': "Losers Final",
+#     'lqf1': "Losers Quarter-Final",
+#     'lqf2': "Losers Quarter-Final",
+#     'lr1': "Losers Round One",
+#     'lr2': "Losers Round One",
+#     'lsf1': "Losers Semi-Final",
+#     'lsf2': "Losers Semi-Final",
+#     'wf1': "Winners Final",
+#     'wsf1': "Winners Semi-Final",
+#     'wsf2': "Winners Semi-Final",
+# }
 
 
 dropdowns = html.Div([
     dbc.Label("Tournament Round"),
-    dcc.Dropdown([{'label': f'{tournament_round_mapping[tr_round[0]]}: {tr_round[1]} vs {tr_round[2]}', 'value': tr_round[0]} for tr_round in df.reset_index().set_index(['tournament_round', 'p1_player_name', 'p2_player_name']).index.unique()], 'gf', clearable=False, id='tr-selection', className="dbc"),
+    dcc.Dropdown([{'label': f'{TOURNAMENT_ROUND_MAPPINGS[tr_round[0]]}: {tr_round[1]} vs {tr_round[2]}', 'value': tr_round[0]} for tr_round in df.reset_index().set_index(['tournament_round', 'p1_player_name', 'p2_player_name']).index.unique()], 'gf', clearable=False, id='tr-selection', className="dbc"),
     dbc.Label("Match number"),
     dcc.Dropdown(id='set-selection', clearable=False, className="dbc"),
 ])
 
 controls = dbc.Card([dropdowns])
-graphs = dbc.Card([dbc.Spinner(dcc.Graph(id='pred_graph', style={'height': '80vh', 'visibility': 'hidden'}), color="primary")])
+graphs = dbc.Card([dbc.Spinner(dcc.Graph(id='pred_graph', style={'height': '80vh', 'visibility': 'hidden', 'text-align': 'center'}), color="primary")])
+
+hearts_default = [html.Img(src=app.get_asset_url(FULL_HEART), className="sub_heart"), html.Img(src=app.get_asset_url(FULL_HEART), className="main_heart")]
 
 pred_graph_tab = dbc.Card(
     dbc.CardBody([
         dbc.Row([
-            dbc.Col([html.Div(id='p1_health_bar', className='p1_health bar',style={"--p":"100%"})], width=5),
-                #dbc.Label("Health", className="bar_label"),
-            dbc.Label("Health", className="bar_label"),
-            dbc.Col([html.Div(id='p2_health_bar', className='p2_health bar',style={"--p":"100%"})], width=5),
-        ], justify='center'),
-        dbc.Row([
-            dbc.Col([html.Div(id='p1_burst_bar', className='p1_burst bar',style={"--p":"0%"})], width=5),
-            dbc.Label("Burst", className="bar_label"),
-            dbc.Col([html.Div(id='p2_burst_bar', className='p2_burst bar',style={"--p":"00%"})], width=5),
-        ], justify='center'),
-        dbc.Row([
-            dbc.Col([html.Div(id='p1_tension_bar', className='p1_tension bar',style={"--p":"100%"})], width=5),
-            dbc.Label("Tension", className="bar_label"),
-            dbc.Col([html.Div(id='p2_tension_bar', className='p2_tension bar',style={"--p":"100%"})], width=5),
-        ], justify='center'),
+            dbc.Col(className="player_portrait_container", id="p1_char_portrait", width=2),
+            dbc.Col([
+            # dbc.Row([
+            #     dbc.Col(id="p1_player_name", className='p1 player_name', width=5),
+            #     dbc.Label("NAME", className="bar_label"),
+            #     dbc.Col(id="p2_player_name", className='p2 player_name', width=5),
+            # ], justify='center'),
+            dbc.Row([
+                dbc.Col([html.Div(hearts_default)], id="p1_round_count", className='p1', width=5),
+                dbc.Label("Round", className="bar_label"),
+                dbc.Col([html.Div(hearts_default[::-1])], id="p2_round_count", className='p2', width=5),
+            ], justify='center', style={"height": "15%"}),
+            dbc.Row([
+                dbc.Col([html.Div([html.Div(["100%"], style={"--p": "100%"}, className="p1_health bar_text")], className='p1 bar_container')], id="p1_health_bar", className="p1", width=5),
+                dbc.Label("Health", className="bar_label"),
+                dbc.Col([html.Div([html.Div(["100%"], style={"--p": "100%"}, className="p2_health bar_text")], className='p2 bar_container')], id="p2_health_bar", className="p2", width=5),
+            ], justify='center'),
+            dbc.Row([
+                dbc.Col([html.Div([html.Div(["100%"], style={"--p": "100%"}, className="p1_burst bar_text")], className='p1 bar_container', style={"width": "33%"})], id="p1_burst_bar", className="p1", width=5),
+                dbc.Label("Burst", className="bar_label"),
+                dbc.Col([html.Div([html.Div(["100%"], style={"--p": "100%"}, className="p2_burst bar_text")], className='p2 bar_container', style={"width": "33%"})], id="p2_burst_bar", className="p2", width=5),
+            ], justify='center'),
+            dbc.Row([
+                dbc.Col([html.Div([html.Div(["0%"], style={"--p": "0%"}, className="p1_tension bar_text")], className='p1 bar_container')], id="p1_tension_bar", className="p1", width=5),
+                dbc.Label("Tension", className="bar_label"),
+                dbc.Col([html.Div([html.Div(["0%"], style={"--p": "0%"}, className="p2_tension bar_text")], className='p2 bar_container')], id="p2_tension_bar", className="p2", width=5),
+            ], justify='center'),
+            dbc.Row([
+                dbc.Col([html.Div([0])], id="p1_counter", className="p1", width=5),
+                dbc.Label("Counter", className="bar_label"),
+                dbc.Col([html.Div([0])], id="p2_counter", className="p2", width=5),
+            ], justify='center'),], width=8),
+            dbc.Col(className="player_portrait_container", id="p2_char_portrait", width=2),
+        ]),
         dbc.Row([
             graphs
         ])
@@ -127,7 +149,9 @@ def set_initial_set_value(options):
     return options[0]
 
 @app.callback(
-    [Output('pred_graph', 'figure'),
+    [Output('p1_char_portrait', 'children'),
+    Output('p2_char_portrait', 'children'),
+    Output('pred_graph', 'figure'),
     Output('pred_graph', 'style'),
     Output('burst_graph', 'figure'),
     Output('burst_graph', 'style'),
@@ -149,6 +173,10 @@ def update_graph(tr, set_num, active_tab):
     asuka_tab_style = {'display': 'none'}
     p1_player_name = dff['p1_player_name'].iat[0]
     p2_player_name = dff['p2_player_name'].iat[0]
+
+    p1_char_name = dff['p1_name'].iat[0]
+    p2_char_name = dff['p2_name'].iat[0]
+
     asuka_fig = graph.placeholder_graph()
 
     p1_set_win = dff['p1_set_win'].iat[0]
@@ -166,41 +194,64 @@ def update_graph(tr, set_num, active_tab):
     burst_match_stats_fig = graph.create_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'burst_count', 'Psych Burst Count')
     burst_bar_match_stats_fig = graph.create_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'burst_use', 'Burst Bar Used')
     tension_match_stats_fig = graph.create_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'tension_use', 'Tension Used')
-    return fig,  {'height': '90vh', 'visibility': 'visible'},\
+
+    p1_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p1_char_name}.png'), className="player_portrait"), html.Div([p1_player_name.upper()], className="player_name_overlay", style={"--outline": PLAYER_COLOURS["p1"]})]
+    p2_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p2_char_name}.png'), className="player_portrait"), html.Div([p2_player_name.upper()], className="player_name_overlay", style={"--outline": PLAYER_COLOURS["p2"]})]
+
+    return p1_player_name_div, p2_player_name_div, fig,  {'height': '90vh', 'visibility': 'visible'},\
             burst_match_stats_fig, match_stats_style,\
             burst_bar_match_stats_fig, match_stats_style,\
             tension_match_stats_fig, match_stats_style,\
             asuka_tab_style, asuka_fig, active_tab
 
 @app.callback(
-    Output('p1_health_bar', 'style'),
-    Output('p2_health_bar', 'style'),
-    Output('p1_burst_bar', 'style'),
-    Output('p2_burst_bar', 'style'),
-    Output('p1_tension_bar', 'style'),
-    Output('p2_tension_bar', 'style'),
+    Output('p1_round_count', 'children'),
+    Output('p2_round_count', 'children'),
+    Output('p1_health_bar', 'children'),
+    Output('p2_health_bar', 'children'),
+    Output('p1_burst_bar', 'children'),
+    Output('p2_burst_bar', 'children'),
+    Output('p1_tension_bar', 'children'),
+    Output('p2_tension_bar', 'children'),
+    Output('p1_counter', 'children'),
+    Output('p2_counter', 'children'),
     Input('pred_graph', 'hoverData')
 )
 def display_hover_data(hoverData):
-    p1_health_style={}
-    p2_health_style={}
-    p1_burst_style={}
-    p2_burst_style={}
-    p1_tension_style={}
-    p2_tension_style={}
+    bars = {}
+    bars["p1"] = {}
+    bars["p2"] = {}
+    data_list = []
     if hoverData != None:
         for point in hoverData["points"]:
             if "customdata" in point.keys():
-                data = point['customdata']
-                if data[8] == "p1":
-                    p1_health_style["--p"] = f'{100-int(100 * data[0])}%'
-                    p1_burst_style["--p"] = f'{100-int(100 * data[2])}%'
-                    p1_tension_style["--p"] = f'{100-int(100 * data[1])}%'
-                else:
-                    p2_health_style["--p"] = f'{100-int(100 * data[0])}%'
-                    p2_burst_style["--p"] = f'{100-int(100 * data[2])}%'
-                    p2_tension_style["--p"] = f'{100-int(100 * data[1])}%'
-    return p1_health_style, p2_health_style, p1_burst_style, p2_burst_style, p1_tension_style, p2_tension_style
+                data_list.append(point['customdata'])
+    else:
+        data_list = DEFAULT_PRED_HD
+
+    for data in data_list:
+        player_side = data[PRED_HD_INDEX['side']]
+        for bar in ["health", "burst", "tension"]:
+            value = round(100 * data[PRED_HD_INDEX[bar]], 2)
+            background_style = {}
+            bar_class_name = f'{player_side}_{bar} bar_text'
+            background_class_name = f'bar_container {player_side}'
+            if bar == "health" and data[PRED_HD_INDEX['curr_damaged']]:
+                background_class_name += " curr_dmg"
+                background_style = {"--cd_w": f'{value+10}%'}
+            elif bar == "burst":
+                background_style = {"width": "40%"}
+            bars[player_side][bar] = html.Div([html.Div([f"{value}%"], style={"--w": f"{value}%"}, className=bar_class_name)], className=background_class_name, style=background_style)
+        bars[player_side]["counter"] = html.Div([data[PRED_HD_INDEX["counter"]]], className=f"bar_label {player_side}", style={"font-size": "30px"})
+        curr_hearts = copy.deepcopy(hearts_default)
+        for i in range(data[PRED_HD_INDEX['round_count']]):
+            curr_hearts[i].src = app.get_asset_url(EMPTY_HEART)
+        heart_side = "p1" if player_side == "p2" else "p2"
+        curr_hearts = curr_hearts if heart_side == "p1" else curr_hearts[::-1]
+        bars[heart_side]["round_count"] = html.Div(curr_hearts)
+
+
+    return bars["p1"]["round_count"], bars["p2"]["round_count"], bars["p1"]["health"], bars["p2"]["health"], bars["p1"]["burst"], bars["p2"]["burst"], bars["p1"]["tension"], bars["p2"]["tension"], bars["p1"]["counter"], bars["p2"]["counter"]
 
 @app.callback(
     Output('spells', 'children'),

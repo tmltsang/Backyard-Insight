@@ -1,63 +1,97 @@
-.bar {
-    height:24px;
+@font-face {
+    font-family: strive;
+    src: url('fonts/Impact - Strive.otf')
+}
+
+.bar_container {
     width:95%;
     margin-bottom: 15px;
     background-repeat:no-repeat;
-    background-size:var(--p,50%) 100%,100% 100%;
+    min-width: 0;
 }
-.p1_health {
-    float:right;
-    background-image:
-     linear-gradient(#ccc,#ccc),
-     linear-gradient(to right,  #f3e1bc , #f29488 );
+
+.p1 {
+    display: flex;
+    justify-content: flex-end;
+    /*float: right;*/
+    background-position:right, left;
+}
+
+.p2 {
+    display: flex;
+    justify-content: flex-start;
+    /* float: left; */
     background-position:left, right;
+}
+
+.curr_dmg {
+    background-image: linear-gradient(#b20300, #b20300);
+    background-size: var(--cd_w, 100%) 100%;
+}
+
+.bar_text{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    color: rgb(49, 49, 49);
+    font-family: strive;
+    font-size: 20px;
+    min-width: 0;
+}
+
+.p1_health {
+    background-image:
+     linear-gradient(to right,  #f3e1bc , #f29488 );
+    width: var(--w, 50%);
+    min-width: 0;
 }
 
 .p2_health {
     background-image:
-     linear-gradient(#ccc,#ccc),
      linear-gradient(to left,  #f3e1bc , #f29488 );
-    background-position:right, left;
+    width: var(--w, 50%);
+    min-width: 0;
 }
 
 .p1_burst {
-    width:50%;
-    float:right;
     background-image:
-     linear-gradient(#ccc,#ccc),
      linear-gradient(to right,  #0a80ce , #1ca5e7 );
-    background-position:left, right;
+    width: var(--w, 50%);
+    min-width: 0;
 }
 
 .p2_burst {
-    width:50%;
     background-image:
-     linear-gradient(#ccc,#ccc),
      linear-gradient(to left,  #0a80ce , #1ca5e7 );
-    background-position:right, left;
+    width: var(--w, 50%);
+    min-width: 0;
 }
 
 .p1_tension {
-    float:right;
     background-image:
-     linear-gradient(#ccc,#ccc),
      linear-gradient(to right,  #ffff9d , #ffffff );
-    background-size:var(--p,50%) 100%,100% 100%;
-    background-position:left, right;
+    width: var(--w, 50%);
+    min-width: 0;
 }
 
 .p2_tension {
     background-image:
-     linear-gradient(#ccc,#ccc),
      linear-gradient(to left,  #ffff9d , #ffffff );
-    background-position:right, left;
+    width: var(--w, 50%);
+    min-width: 0;
 }
 
 .bar_label {
     display: block;
     text-align: center;
-    width:5%;
+    width:10%;
     line-height: 150%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: strive;
+    font-size: 20px;
 }
 
 .spell_background {
@@ -95,4 +129,58 @@
 
 .label_end{
     justify-content: start;
+}
+
+.main_heart{
+    width: auto;
+    height: 50%;
+}
+
+.sub_heart {
+    width: auto;
+    height: 35%;
+}
+
+.heart_container {
+    height:25%
+}
+
+.player_name_container {
+    display: flex;
+    justify-content: center;
+}
+
+.player_name {
+    text-align: center;
+    font-family: strive;
+    font-size: 25px;
+}
+
+.player_name_overlay {
+    text-align: center;
+    font-family: strive;
+    font-size: 30px;
+    position: absolute;
+    top: 90%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-shadow:
+        3px 3px 0 var(--outline, #000),
+        -3px 3px 0 var(--outline, #000),
+        -3px -3px 0 var(--outline, #000),
+        3px -3px 0 var(--outline, #000);
+}
+
+.player_portrait_container {
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.player_portrait {
+    object-fit: contain;
+    width: 100%;
+    height: auto;
+    max-width: 256px;
+    max-height: 256px;
 }
