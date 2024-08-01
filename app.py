@@ -23,29 +23,15 @@ w3schools = 'https://www.w3schools.com/w3css/4/w3.css'
 external_stylesheets = [dbc.themes.JOURNAL, dbc_css, w3schools]
 
 app = Dash(__name__, suppress_callback_exceptions = True, external_stylesheets=external_stylesheets)
+app.title = 'GG Strive Tournament Stats'
 server = app.server
-
-# colours = {'p1': 'red',
-#            'p2': 'blue'}
-
-# tournament_round_mapping = {
-#     'gf' : "Grand Finals",
-#     'lf1': "Losers Final",
-#     'lqf1': "Losers Quarter-Final",
-#     'lqf2': "Losers Quarter-Final",
-#     'lr1': "Losers Round One",
-#     'lr2': "Losers Round One",
-#     'lsf1': "Losers Semi-Final",
-#     'lsf2': "Losers Semi-Final",
-#     'wf1': "Winners Final",
-#     'wsf1': "Winners Semi-Final",
-#     'wsf2': "Winners Semi-Final",
-# }
 
 
 dropdowns = html.Div([
+    dbc.Label("Tournament"),
+    dcc.Dropdown([{'label': tournament.replace('_', ' ').title(), 'value': tournament} for tournament in df.index.unique(level='tournament')], 'evo', clearable=False, id='tournament-selection', className="dbc"),
     dbc.Label("Tournament Round"),
-    dcc.Dropdown([{'label': f'{TOURNAMENT_ROUND_MAPPINGS[tr_round[0]]}: {tr_round[1]} vs {tr_round[2]}', 'value': tr_round[0]} for tr_round in df.reset_index().set_index(['tournament_round', 'p1_player_name', 'p2_player_name']).index.unique()], 'gf', clearable=False, id='tr-selection', className="dbc"),
+    dcc.Dropdown(clearable=False, id='tr-selection', className="dbc"),
     dbc.Label("Match number"),
     dcc.Dropdown(id='set-selection', clearable=False, className="dbc"),
 ])
@@ -60,36 +46,44 @@ pred_graph_tab = dbc.Card(
         dbc.Row([
             dbc.Col(className="player_portrait_container", id="p1_char_portrait", width=2),
             dbc.Col([
-            # dbc.Row([
-            #     dbc.Col(id="p1_player_name", className='p1 player_name', width=5),
-            #     dbc.Label("NAME", className="bar_label"),
-            #     dbc.Col(id="p2_player_name", className='p2 player_name', width=5),
-            # ], justify='center'),
             dbc.Row([
                 dbc.Col([html.Div(hearts_default)], id="p1_round_count", className='p1', width=5),
                 dbc.Label("Round", className="bar_label"),
                 dbc.Col([html.Div(hearts_default[::-1])], id="p2_round_count", className='p2', width=5),
             ], justify='center', style={"height": "15%"}),
             dbc.Row([
-                dbc.Col([html.Div([html.Div(["100%"], style={"--p": "100%"}, className="p1_health bar_text")], className='p1 bar_container')], id="p1_health_bar", className="p1", width=5),
+                dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p1_health bar_text")], className='p1 bar_container')], id="p1_health_bar", className="p1", width=5),
                 dbc.Label("Health", className="bar_label"),
-                dbc.Col([html.Div([html.Div(["100%"], style={"--p": "100%"}, className="p2_health bar_text")], className='p2 bar_container')], id="p2_health_bar", className="p2", width=5),
+                dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p2_health bar_text")], className='p2 bar_container')], id="p2_health_bar", className="p2", width=5),
             ], justify='center'),
             dbc.Row([
-                dbc.Col([html.Div([html.Div(["100%"], style={"--p": "100%"}, className="p1_burst bar_text")], className='p1 bar_container', style={"width": "33%"})], id="p1_burst_bar", className="p1", width=5),
+                dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p1_burst bar_text")], className='p1 bar_container', style={"width": "33%"})], id="p1_burst_bar", className="p1", width=5),
                 dbc.Label("Burst", className="bar_label"),
-                dbc.Col([html.Div([html.Div(["100%"], style={"--p": "100%"}, className="p2_burst bar_text")], className='p2 bar_container', style={"width": "33%"})], id="p2_burst_bar", className="p2", width=5),
+                dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p2_burst bar_text")], className='p2 bar_container', style={"width": "33%"})], id="p2_burst_bar", className="p2", width=5),
             ], justify='center'),
             dbc.Row([
-                dbc.Col([html.Div([html.Div(["0%"], style={"--p": "0%"}, className="p1_tension bar_text")], className='p1 bar_container')], id="p1_tension_bar", className="p1", width=5),
+                dbc.Col([html.Div([html.Div(["0%"], style={"--w": "0%"}, className="p1_tension bar_text")], className='p1 bar_container')], id="p1_tension_bar", className="p1", width=5),
                 dbc.Label("Tension", className="bar_label"),
-                dbc.Col([html.Div([html.Div(["0%"], style={"--p": "0%"}, className="p2_tension bar_text")], className='p2 bar_container')], id="p2_tension_bar", className="p2", width=5),
+                dbc.Col([html.Div([html.Div(["0%"], style={"--w": "0%"}, className="p2_tension bar_text")], className='p2 bar_container')], id="p2_tension_bar", className="p2", width=5),
             ], justify='center'),
             dbc.Row([
                 dbc.Col([html.Div([0])], id="p1_counter", className="p1", width=5),
                 dbc.Label("Counter", className="bar_label"),
                 dbc.Col([html.Div([0])], id="p2_counter", className="p2", width=5),
-            ], justify='center'),], width=8),
+            ], justify='center'),
+            dbc.Row([
+                dbc.Label("Round Win Probability", style={'width': '25%'}, className="bar_label"),
+            ], justify='center'),
+            dbc.Row([
+               html.Div([html.Div([html.Div("50%"), html.Div("50%")], style={"--w": "50%"}, className="win_prob_bar bar_text")], id='round_win_prob_bar', className='bar_container'),
+            ], justify='center'),
+            dbc.Row([
+                dbc.Label("Set Win Probability", style={'width': '25%'}, className="bar_label"),
+            ], justify='center'),
+             dbc.Row([
+               html.Div([html.Div([html.Div("50%"), html.Div("50%")], style={"--w": "50%"}, className="win_prob_bar bar_text")], id='set_win_prob_bar', className='bar_container'),
+            ], justify='center'),
+            ], width=8),
             dbc.Col(className="player_portrait_container", id="p2_char_portrait", width=2),
         ]),
         dbc.Row([
@@ -115,7 +109,7 @@ asuka_stats = dbc.Card(
 
 app.layout = dbc.Container(
     [
-        html.H1(children='Guilty Gear -Strive- Match Predictions', style={'textAlign':'center'}, className="dbc"),
+        html.H1(children=html.Img(src='https://dustloop.com/wiki/images/5/55/GGST_Logo.png', style={'display':'block', 'width':'25%', 'height':'auto'}), style={'display': 'flex', 'justify-content': 'center'} ,className="dbc"),
         dbc.Row([
             dbc.Col([
                 controls,
@@ -135,18 +129,34 @@ app.layout = dbc.Container(
 )
 
 @app.callback(
-    Output('set-selection', 'options'),
-    [Input('tr-selection', 'value')]
+    Output('tr-selection', 'options'),
+    [Input('tournament-selection', 'value')]
 )
-def update_round_dropdown(value):
-    return df.loc[('arcsys_world_tour', value)].index.unique(level='set_index')
+def update_tr_dropdown(tournament):
+    return [{'label': f'{TOURNAMENT_ROUND_MAPPINGS[tr_round[0]]}: {tr_round[1]} vs {tr_round[2]}', 'value': tr_round[0]} for tr_round in df.loc[tournament].reset_index().set_index(['tournament_round', 'p1_player_name', 'p2_player_name']).index.unique()]
+
+@app.callback(
+    Output('tr-selection', 'value'),
+    [Input('tr-selection', 'options')]
+)
+def set_initial_tr_value(options):
+    return options[0]['value']
+
+
+@app.callback(
+    Output('set-selection', 'options'),
+    [Input('tr-selection', 'value')],
+    State('tournament-selection', 'value')
+)
+def update_match_dropdown(tr, tournament):
+    return [{'label': match+1, 'value':match} for match in df.loc[(tournament, tr)].index.unique(level='set_index')]
 
 @app.callback(
     Output('set-selection', 'value'),
     [Input('set-selection', 'options')]
 )
 def set_initial_set_value(options):
-    return options[0]
+    return options[0]['value']
 
 @app.callback(
     [Output('p1_char_portrait', 'children'),
@@ -164,11 +174,12 @@ def set_initial_set_value(options):
     Output('tabs', 'active_tab')],
     [Input('tr-selection', 'value'),
     Input('set-selection', 'value'),],
-    [State('tabs', 'active_tab'),],
+    [State('tabs', 'active_tab'),
+     State('tournament-selection', 'value')],
 )
-def update_graph(tr, set_num, active_tab):
-    dff = df.loc[('arcsys_world_tour', tr, set_num)]
-    match_stats_dff = df_match_stats.loc[('arcsys_world_tour', tr, set_num)]
+def update_graph(tr, set_num, active_tab, tournament):
+    dff = df.loc[(tournament, tr, set_num)]
+    match_stats_dff = df_match_stats.loc[(tournament, tr, set_num)]
     asuka_stats_dff = None
     asuka_tab_style = {'display': 'none'}
     p1_player_name = dff['p1_player_name'].iat[0]
@@ -180,23 +191,23 @@ def update_graph(tr, set_num, active_tab):
     asuka_fig = graph.placeholder_graph()
 
     p1_set_win = dff['p1_set_win'].iat[0]
-    p1_round_win = dff['p1_round_win'].iat[0]
-    if df_asuka_stats.index.isin([('arcsys_world_tour', tr, set_num)]).any():
-        asuka_stats_dff = df_asuka_stats.loc[('arcsys_world_tour', tr, set_num)]
+    p1_round_win = dff['p1_round_win'].groupby("round_index").first().tolist()
+    if df_asuka_stats.index.isin([(tournament, tr, set_num)]).any():
+        asuka_stats_dff = df_asuka_stats.loc[(tournament, tr, set_num)]
         asuka_tab_style = {}
         asuka_fig = graph.create_asuka_graph(asuka_stats_dff, p1_player_name, p2_player_name)
     else:
         if active_tab == 'asuka_tab':
             active_tab = 'pred_tab'
 
-    fig = graph.create_pred_graph(dff, p1_player_name, p2_player_name)
-    match_stats_style = {'height': '30vh', 'visibility': 'visible'}
+    fig = graph.create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char_name)
+    match_stats_style = {'height': '45vh', 'visibility': 'visible'}
     burst_match_stats_fig = graph.create_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'burst_count', 'Psych Burst Count')
     burst_bar_match_stats_fig = graph.create_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'burst_use', 'Burst Bar Used')
     tension_match_stats_fig = graph.create_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'tension_use', 'Tension Used')
 
-    p1_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p1_char_name}.png'), className="player_portrait"), html.Div([p1_player_name.upper()], className="player_name_overlay", style={"--outline": PLAYER_COLOURS["p1"]})]
-    p2_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p2_char_name}.png'), className="player_portrait"), html.Div([p2_player_name.upper()], className="player_name_overlay", style={"--outline": PLAYER_COLOURS["p2"]})]
+    p1_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p1_char_name}.png'), className="player_portrait"), html.Div([p1_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS["p1"]})]
+    p2_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p2_char_name}.png'), className="player_portrait"), html.Div([p2_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS["p2"]})]
 
     return p1_player_name_div, p2_player_name_div, fig,  {'height': '90vh', 'visibility': 'visible'},\
             burst_match_stats_fig, match_stats_style,\
@@ -215,22 +226,33 @@ def update_graph(tr, set_num, active_tab):
     Output('p2_tension_bar', 'children'),
     Output('p1_counter', 'children'),
     Output('p2_counter', 'children'),
+    Output('round_win_prob_bar', 'children'),
+    Output('set_win_prob_bar', 'children'),
     Input('pred_graph', 'hoverData')
 )
 def display_hover_data(hoverData):
     bars = {}
     bars["p1"] = {}
     bars["p2"] = {}
-    data_list = []
+    data_dict = {}
     if hoverData != None:
         for point in hoverData["points"]:
             if "customdata" in point.keys():
-                data_list.append(point['customdata'])
+                player_side = point['customdata'][PRED_HD_INDEX['side']]
+                data_dict[player_side] = {}
+                data_dict[player_side]['customdata'] = point['customdata']
+                data_dict[player_side]['set_win_prob'] = point['y']
     else:
-        data_list = DEFAULT_PRED_HD
+        data_dict = DEFAULT_PRED_HD
 
-    for data in data_list:
-        player_side = data[PRED_HD_INDEX['side']]
+    p1_round_win_prob =  round(100 * data_dict['p1']['customdata'][PRED_HD_INDEX['round_win']], 1)
+
+    bars['round_win_prob'] = html.Div([html.Div(f'{p1_round_win_prob}%'), html.Div(f'{round(100 - p1_round_win_prob, 1)}%')], style={"--w": f'{100 - p1_round_win_prob}%'}, className="win_prob_bar bar_text")
+    p1_set_win_prob =  round(100 * data_dict['p1']['set_win_prob'], 1)
+    bars['set_win_prob'] = html.Div([html.Div(f'{p1_set_win_prob}%'), html.Div(f'{round(100 - p1_set_win_prob, 1)}%')], style={"--w": f'{100 - p1_set_win_prob}%'}, className="win_prob_bar bar_text")
+
+    for player_side in data_dict.keys():
+        data = data_dict[player_side]['customdata']
         for bar in ["health", "burst", "tension"]:
             value = round(100 * data[PRED_HD_INDEX[bar]], 2)
             background_style = {}
@@ -250,8 +272,12 @@ def display_hover_data(hoverData):
         curr_hearts = curr_hearts if heart_side == "p1" else curr_hearts[::-1]
         bars[heart_side]["round_count"] = html.Div(curr_hearts)
 
-
-    return bars["p1"]["round_count"], bars["p2"]["round_count"], bars["p1"]["health"], bars["p2"]["health"], bars["p1"]["burst"], bars["p2"]["burst"], bars["p1"]["tension"], bars["p2"]["tension"], bars["p1"]["counter"], bars["p2"]["counter"]
+    return bars["p1"]["round_count"], bars["p2"]["round_count"],\
+            bars["p1"]["health"], bars["p2"]["health"],\
+            bars["p1"]["burst"], bars["p2"]["burst"],\
+            bars["p1"]["tension"], bars["p2"]["tension"],\
+            bars["p1"]["counter"], bars["p2"]["counter"],\
+            bars['round_win_prob'], bars['set_win_prob']
 
 @app.callback(
     Output('spells', 'children'),
@@ -259,21 +285,23 @@ def display_hover_data(hoverData):
 )
 def display_asuka_hover_data(hoverData):
     if hoverData != None:
-        rows = [dbc.Row(), dbc.Row()]
+        columns = [dbc.Col(), dbc.Col()]
         for trace in hoverData["points"]:
             player_data = trace["customdata"]
             spells = []
-            for spell in player_data[:4]:
+            for spell in player_data[ASUKA_HD_INDEX["spell_1"]:ASUKA_HD_INDEX["spell_4"]+1]:
                 opactiy = 1.0 if spell != 'used_spell' else 0.0
                 src = app.get_asset_url(f'images/spells/{spell}.png')
                 style={"opacity": opactiy}
                 spells.append(html.Img(src=src, style=style, className='spell'))
             row_index = 0
-            if player_data[4] == "p2":
+            if player_data[ASUKA_HD_INDEX["player_side"]] == "p2":
                 row_index = 1
-            spells=[html.Div(spells, className="spell_background", style={"--colour": colours[player_data[4]]})]
-            rows[row_index] = dbc.Row([dbc.Label(f"{player_data[5]}'s spells: ", className='spell_label label_start')] + spells + [dbc.Label(f"{trace['y']}%", className='spell_label label_end')], justify='center')
-        return rows
+            spells=[html.Div(spells, className="spell_background", style={"--colour": PLAYER_COLOURS[player_data[ASUKA_HD_INDEX["player_side"]]]})]
+            columns[row_index] = dbc.Col([dbc.Row([dbc.Label(f"{player_data[ASUKA_HD_INDEX['player_name']].upper()}", className='spell_label name_shadow', style={"--outline": PLAYER_COLOURS[player_data[ASUKA_HD_INDEX["player_side"]]]})], justify="center"),
+                                           dbc.Row(spells, justify="center"),
+                                           dbc.Row([dbc.Label(f"{trace['y']}%", className='spell_label')], justify="center")])
+        return columns
     else:
         return []
 

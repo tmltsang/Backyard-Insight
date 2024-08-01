@@ -15,7 +15,7 @@ class GGDataClient():
     def get_all_matches(self):
         df: pd.DataFrame
         if self.local:
-            df = pd.read_csv("data/arcsys_world_tour_70.csv")
+            df = pd.read_csv("data/tournament_data.csv")
         else:
             df = pd.DataFrame(self.client.find(self.config['COLLECTION_MATCH']))
             del df['_id']
@@ -24,7 +24,7 @@ class GGDataClient():
     def get_all_match_stats(self):
         df: pd.DataFrame
         if self.local:
-            df = pd.read_csv("data/arcsys_world_tour_70_match_stats.csv")
+            df = pd.read_csv("data/tournament_match_stats.csv")
         else:
             df = pd.DataFrame(self.client.find(self.config['COLLECTION_MATCH_STATS']))
             del df['_id']

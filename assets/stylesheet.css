@@ -13,14 +13,12 @@
 .p1 {
     display: flex;
     justify-content: flex-end;
-    /*float: right;*/
     background-position:right, left;
 }
 
 .p2 {
     display: flex;
     justify-content: flex-start;
-    /* float: left; */
     background-position:left, right;
 }
 
@@ -34,10 +32,15 @@
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: center;
-    color: rgb(49, 49, 49);
+    color: rgb(0, 0, 0);
     font-family: strive;
     font-size: 20px;
     min-width: 0;
+    text-shadow:
+    1px 1px 0 white,
+    -1px 1px 0 white,
+    -1px -1px 0 white,
+    1px -1px 0 white;
 }
 
 .p1_health {
@@ -91,7 +94,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: strive;
-    font-size: 20px;
+    font-size: 24px;
+    text-shadow:
+    3px 3px 0 black,
+    -3px 3px 0 black,
+    -3px -3px 0 black,
+    3px -3px 0 black;
 }
 
 .spell_background {
@@ -103,7 +111,7 @@
     margin-bottom: 1%;
     position: relative;
     box-shadow: var(--colour, red) 0px 5px 10px 3px;
-    width: 10%;
+    width: 17.5%;
     height: auto;
     display: flex;
     align-items: center;
@@ -120,15 +128,10 @@
 .spell_label{
     display: flex;
     align-items: center;
+    justify-content: center;
+    font-family: strive;
+    font-size: 30px;
     width:15%
-}
-
-.label_start{
-    justify-content: end;
-}
-
-.label_end{
-    justify-content: start;
 }
 
 .main_heart{
@@ -164,6 +167,9 @@
     top: 90%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+.name_shadow {
     text-shadow:
         3px 3px 0 var(--outline, #000),
         -3px 3px 0 var(--outline, #000),
@@ -183,4 +189,16 @@
     height: auto;
     max-width: 256px;
     max-height: 256px;
+}
+
+.win_prob_bar {
+    background-image:
+        linear-gradient(blue,blue),
+        linear-gradient(red ,red );
+    background-size: var(--w, 25%), 100%, 100%, 100%;
+    background-position:right,left;
+    background-repeat:no-repeat;
+    display: flex;
+    justify-content: space-between;
+    width: 95%
 }
