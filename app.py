@@ -71,21 +71,21 @@ pred_graph_tab = dbc.Card(
                 dbc.Label("Counter", className="bar_label"),
                 dbc.Col([html.Div([0])], id="p2_counter", className="p2", width=5),
             ], justify='center'),
-            dbc.Row([
-                dbc.Label("Round Win Probability", style={'width': '25%'}, className="bar_label"),
-            ], justify='center'),
-            dbc.Row([
-               html.Div([html.Div([html.Div("50%"), html.Div("50%")], style={"--w": "50%"}, className="win_prob_bar bar_text")], id='round_win_prob_bar', className='bar_container'),
-            ], justify='center'),
-            dbc.Row([
-                dbc.Label("Set Win Probability", style={'width': '25%'}, className="bar_label"),
-            ], justify='center'),
-             dbc.Row([
-               html.Div([html.Div([html.Div("50%"), html.Div("50%")], style={"--w": "50%"}, className="win_prob_bar bar_text")], id='set_win_prob_bar', className='bar_container'),
-            ], justify='center'),
             ], width=8),
             dbc.Col(className="player_portrait_container", id="p2_char_portrait", width=2),
         ]),
+        dbc.Row([
+            dbc.Label("Round Win Probability", style={'width': '25%'}, className="bar_label"),
+        ], justify='center'),
+        dbc.Row([
+            html.Div([html.Div([html.Div("50%"), html.Div("50%")], style={"--w": "50%"}, className="win_prob_bar bar_text")], id='round_win_prob_bar', className='bar_container'),
+        ], justify='center'),
+        dbc.Row([
+            dbc.Label("Set Win Probability", style={'width': '25%'}, className="bar_label"),
+        ], justify='center'),
+            dbc.Row([
+            html.Div([html.Div([html.Div("50%"), html.Div("50%")], style={"--w": "50%"}, className="win_prob_bar bar_text")], id='set_win_prob_bar', className='bar_container'),
+        ], justify='center'),
         dbc.Row([
             graphs
         ])
@@ -247,9 +247,9 @@ def display_hover_data(hoverData):
 
     p1_round_win_prob =  round(100 * data_dict['p1']['customdata'][PRED_HD_INDEX['round_win']], 1)
 
-    bars['round_win_prob'] = html.Div([html.Div(f'{p1_round_win_prob}%'), html.Div(f'{round(100 - p1_round_win_prob, 1)}%')], style={"--w": f'{100 - p1_round_win_prob}%'}, className="win_prob_bar bar_text")
+    bars['round_win_prob'] = html.Div([html.Div(f'{p1_round_win_prob}%'), html.Div(f'{round(100 - p1_round_win_prob, 1)}%')], style={"--w": f'{p1_round_win_prob}%'}, className="win_prob_bar bar_text")
     p1_set_win_prob =  round(100 * data_dict['p1']['set_win_prob'], 1)
-    bars['set_win_prob'] = html.Div([html.Div(f'{p1_set_win_prob}%'), html.Div(f'{round(100 - p1_set_win_prob, 1)}%')], style={"--w": f'{100 - p1_set_win_prob}%'}, className="win_prob_bar bar_text")
+    bars['set_win_prob'] = html.Div([html.Div(f'{p1_set_win_prob}%'), html.Div(f'{round(100 - p1_set_win_prob, 1)}%')], style={"--w": f'{p1_set_win_prob}%'}, className="win_prob_bar bar_text")
 
     for player_side in data_dict.keys():
         data = data_dict[player_side]['customdata']

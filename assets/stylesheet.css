@@ -94,12 +94,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: strive;
-    font-size: 24px;
+    font-size: 28px;
     text-shadow:
-    3px 3px 0 black,
-    -3px 3px 0 black,
-    -3px -3px 0 black,
-    3px -3px 0 black;
+    2px 2px 0 black,
+    -2px 2px 0 black,
+    -2px -2px 0 black,
+    2px -2px 0 black;
 }
 
 .spell_background {
@@ -193,12 +193,13 @@
 
 .win_prob_bar {
     background-image:
-        linear-gradient(blue,blue),
-        linear-gradient(red ,red );
+        linear-gradient(red ,red ),
+        linear-gradient(blue,blue);
     background-size: var(--w, 25%), 100%, 100%, 100%;
-    background-position:right,left;
+    background-position:left, right;
     background-repeat:no-repeat;
     display: flex;
     justify-content: space-between;
+    padding: 0;
     width: 95%
 }
