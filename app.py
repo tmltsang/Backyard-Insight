@@ -1,4 +1,4 @@
-from dash import Dash, html, dcc, callback, Output, Input, State
+from dash import Dash, html, dcc, no_update, Output, Input, State
 import dash_bootstrap_components as dbc
 from graphing import graph
 from database.gg_data_client import GGDataClient
@@ -37,7 +37,7 @@ dropdowns = html.Div([
 ])
 
 controls = dbc.Card([dropdowns])
-graphs = dbc.Card([dbc.Spinner(dcc.Graph(id='pred_graph', style={'height': '80vh', 'visibility': 'hidden', 'text-align': 'center'}), color="primary")])
+graphs = dbc.Card([dbc.Spinner(dcc.Graph(id='pred_graph', style={'height': '80vh', 'visibility': 'hidden', 'text-align': 'center'}), color="primary"), dcc.Tooltip(id='pred-graph-tooltip')])
 
 hearts_default = [html.Img(src=app.get_asset_url(FULL_HEART), className="sub_heart"), html.Img(src=app.get_asset_url(FULL_HEART), className="main_heart")]
 
@@ -67,13 +67,25 @@ pred_graph_tab = dbc.Card(
                 dbc.Col([html.Div([html.Div(["0%"], style={"--w": "0%"}, className="p2_tension bar_text")], className='p2 bar_container')], id="p2_tension_bar", className="p2", width=5),
             ], justify='center'),
             dbc.Row([
-                dbc.Col([html.Div([0])], id="p1_counter", className="p1", width=5),
+                dbc.Col([html.Div([0], className='bar_label')], id="p1_counter", className="p1", width=5),
                 dbc.Label("Counter", className="bar_label"),
-                dbc.Col([html.Div([0])], id="p2_counter", className="p2", width=5),
+                dbc.Col([html.Div([0], className='bar_label')], id="p2_counter", className="p2", width=5),
             ], justify='center'),
             ], width=8),
             dbc.Col(className="player_portrait_container", id="p2_char_portrait", width=2),
         ]),
+        html.Div([
+            dbc.Row([
+                    dbc.Col(id="p1_spell", className="p1", width=5),
+                    dbc.Label("Spells", className="bar_label"),
+                    dbc.Col(id="p2_spell", className="p2", width=5),
+                ], justify='center'),
+            dbc.Row([
+                    dbc.Col([html.Div(["0%"])], id="p1_spell_percentile", className="p1", width=5),
+                    dbc.Label("Spell Percentile", className="bar_label"),
+                    dbc.Col([html.Div(["0%"])], id="p2_spell_percentile", className="p2", width=5),
+                ], justify='center'),], style={"display": "none"}, id="spell_info"
+        ),
         dbc.Row([
             dbc.Label("Round Win Probability", style={'width': '25%'}, className="bar_label"),
         ], justify='center'),
@@ -87,23 +99,17 @@ pred_graph_tab = dbc.Card(
             html.Div([html.Div([html.Div("50%"), html.Div("50%")], style={"--w": "50%"}, className="win_prob_bar bar_text")], id='set_win_prob_bar', className='bar_container'),
         ], justify='center'),
         dbc.Row([
-            graphs
+            graphs,
         ])
     ])
 )
 
 match_stats = dbc.Card(
     dbc.CardBody([
-        dcc.Graph(id='burst_graph', style={'height': '30vh', 'visibility': 'hidden'}),
-        dcc.Graph(id='burst_bar_graph', style={'height': '30vh', 'visibility': 'hidden'}),
-        dcc.Graph(id='tension_graph', style={'height': '30vh', 'visibility': 'hidden'})
-    ])
-)
-
-asuka_stats = dbc.Card(
-    dbc.CardBody([
-        html.Div(id="spells"),
-        dbc.Row([dcc.Graph(id='asuka_graph', style={'height': '50vh'})]),
+        dcc.Graph(id='burst_graph', style={'height': '45vh', 'visibility': 'hidden'}),
+        dcc.Graph(id='burst_bar_graph', style={'height': '45vh', 'visibility': 'hidden'}),
+        dcc.Graph(id='tension_graph', style={'height': '45vh', 'visibility': 'hidden'}),
+        dcc.Graph(id='stats_graph', style={'height': '45vh', 'visibility': 'hidden'})
     ])
 )
 
@@ -118,7 +124,7 @@ app.layout = dbc.Container(
                 dbc.Tabs([
                     dbc.Tab(pred_graph_tab, id="pred_tab", tab_id="pred_tab", label="Match Prediction"),
                     dbc.Tab(match_stats, id="match_tab", tab_id="match_tab", label="Match Stats"),
-                    dbc.Tab(asuka_stats, id="asuka_tab", tab_id="asuka_tab", label="Asuka Spells", tab_style={'display': 'none'})
+#                    dbc.Tab(asuka_stats, id="asuka_tab", tab_id="asuka_tab", label="Asuka Spells", tab_style={'display': 'none'})
                 ], id="tabs", active_tab="pred_tab")
             ], width={"size": 10}),
         ])
@@ -169,9 +175,9 @@ def set_initial_set_value(options):
     Output('burst_bar_graph', 'style'),
     Output('tension_graph', 'figure'),
     Output('tension_graph', 'style'),
-    Output('asuka_tab', 'tab_style'),
-    Output('asuka_graph', 'figure'),
-    Output('tabs', 'active_tab')],
+    Output('stats_graph', 'figure'),
+    Output('stats_graph', 'style'),
+    Output('spell_info', 'style')],
     [Input('tr-selection', 'value'),
     Input('set-selection', 'value'),],
     [State('tabs', 'active_tab'),
@@ -181,39 +187,42 @@ def update_graph(tr, set_num, active_tab, tournament):
     dff = df.loc[(tournament, tr, set_num)]
     match_stats_dff = df_match_stats.loc[(tournament, tr, set_num)]
     asuka_stats_dff = None
-    asuka_tab_style = {'display': 'none'}
+    spell_info_style = {'display': 'none'}
     p1_player_name = dff['p1_player_name'].iat[0]
     p2_player_name = dff['p2_player_name'].iat[0]
 
     p1_char_name = dff['p1_name'].iat[0]
     p2_char_name = dff['p2_name'].iat[0]
 
-    asuka_fig = graph.placeholder_graph()
-
     p1_set_win = dff['p1_set_win'].iat[0]
     p1_round_win = dff['p1_round_win'].groupby("round_index").first().tolist()
+    fig = graph.create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char_name)
     if df_asuka_stats.index.isin([(tournament, tr, set_num)]).any():
         asuka_stats_dff = df_asuka_stats.loc[(tournament, tr, set_num)]
-        asuka_tab_style = {}
-        asuka_fig = graph.create_asuka_graph(asuka_stats_dff, p1_player_name, p2_player_name)
+        spell_info_style = {}
+        fig = graph.create_asuka_graph(fig, asuka_stats_dff, p1_player_name, p2_player_name)
     else:
         if active_tab == 'asuka_tab':
             active_tab = 'pred_tab'
 
-    fig = graph.create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char_name)
     match_stats_style = {'height': '45vh', 'visibility': 'visible'}
-    burst_match_stats_fig = graph.create_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'burst_count', 'Psych Burst Count')
-    burst_bar_match_stats_fig = graph.create_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'burst_use', 'Burst Bar Used')
-    tension_match_stats_fig = graph.create_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'tension_use', 'Tension Used')
+    burst_match_stats_fig = graph.create_pie_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'burst_count', 'Psych Burst Count')
+    burst_bar_match_stats_fig = graph.create_pie_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'burst_use', 'Burst Bar Used')
+    tension_match_stats_fig = graph.create_pie_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'tension_use', 'Tension Used')
+    # burst_match_stats_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'burst_count', 'Psych Burst Count', player_root=False)
+    # burst_bar_match_stats_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'burst_use', 'Burst Bar Used', player_root=False)
+    # tension_match_stats_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'tension_use', 'Tension Used', player_root=False)
+    fh_match_stats_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'first_hit', 'First Hits', player_root=False)
 
-    p1_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p1_char_name}.png'), className="player_portrait"), html.Div([p1_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS["p1"]})]
-    p2_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p2_char_name}.png'), className="player_portrait"), html.Div([p2_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS["p2"]})]
+    p1_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p1_char_name}.png'), className="player_portrait"), html.Div([p1_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS(P1)})]
+    p2_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p2_char_name}.png'), className="player_portrait"), html.Div([p2_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS(P2)})]
 
-    return p1_player_name_div, p2_player_name_div, fig,  {'height': '90vh', 'visibility': 'visible'},\
+    return p1_player_name_div, p2_player_name_div, fig,  {'height': '50vh', 'visibility': 'visible'},\
             burst_match_stats_fig, match_stats_style,\
             burst_bar_match_stats_fig, match_stats_style,\
             tension_match_stats_fig, match_stats_style,\
-            asuka_tab_style, asuka_fig, active_tab
+            fh_match_stats_fig, match_stats_style,\
+            spell_info_style
 
 @app.callback(
     Output('p1_round_count', 'children'),
@@ -226,29 +235,41 @@ def update_graph(tr, set_num, active_tab, tournament):
     Output('p2_tension_bar', 'children'),
     Output('p1_counter', 'children'),
     Output('p2_counter', 'children'),
+    Output('p1_spell', 'children'),
+    Output('p2_spell', 'children'),
+    Output('p1_spell_percentile', 'children'),
+    Output('p2_spell_percentile', 'children'),
     Output('round_win_prob_bar', 'children'),
     Output('set_win_prob_bar', 'children'),
-    Input('pred_graph', 'hoverData')
+    Input('pred_graph', 'hoverData'),
+    State("pred_graph", "figure")
 )
-def display_hover_data(hoverData):
+def display_hover_data(hoverData, figure):
     bars = {}
-    bars["p1"] = {}
-    bars["p2"] = {}
+    bars[P1] = {}
+    bars[P2] = {}
     data_dict = {}
+    spell_data = []
     if hoverData != None:
         for point in hoverData["points"]:
             if "customdata" in point.keys():
-                player_side = point['customdata'][PRED_HD_INDEX['side']]
-                data_dict[player_side] = {}
-                data_dict[player_side]['customdata'] = point['customdata']
-                data_dict[player_side]['set_win_prob'] = point['y']
+                trace_name = figure['data'][point['curveNumber']]['name']
+                if trace_name.endswith(' Spells'):
+                    spell_data.append(point)
+                else:
+                    player_side = point['customdata'][PRED_HD_INDEX['side']]
+                    data_dict[player_side] = {}
+                    data_dict[player_side]['customdata'] = point['customdata']
+                    data_dict[player_side]['set_win_prob'] = point['y']
     else:
         data_dict = DEFAULT_PRED_HD
 
-    p1_round_win_prob =  round(100 * data_dict['p1']['customdata'][PRED_HD_INDEX['round_win']], 1)
+    spells = display_asuka_spell_data(spell_data)
+
+    p1_round_win_prob =  round(data_dict[P1]['customdata'][PRED_HD_INDEX['round_win']], 1)
 
     bars['round_win_prob'] = html.Div([html.Div(f'{p1_round_win_prob}%'), html.Div(f'{round(100 - p1_round_win_prob, 1)}%')], style={"--w": f'{p1_round_win_prob}%'}, className="win_prob_bar bar_text")
-    p1_set_win_prob =  round(100 * data_dict['p1']['set_win_prob'], 1)
+    p1_set_win_prob =  round(data_dict[P1]['set_win_prob'], 1)
     bars['set_win_prob'] = html.Div([html.Div(f'{p1_set_win_prob}%'), html.Div(f'{round(100 - p1_set_win_prob, 1)}%')], style={"--w": f'{p1_set_win_prob}%'}, className="win_prob_bar bar_text")
 
     for player_side in data_dict.keys():
@@ -268,42 +289,45 @@ def display_hover_data(hoverData):
         curr_hearts = copy.deepcopy(hearts_default)
         for i in range(data[PRED_HD_INDEX['round_count']]):
             curr_hearts[i].src = app.get_asset_url(EMPTY_HEART)
-        heart_side = "p1" if player_side == "p2" else "p2"
-        curr_hearts = curr_hearts if heart_side == "p1" else curr_hearts[::-1]
+        heart_side = "p1" if player_side == P2 else "p2"
+        curr_hearts = curr_hearts if heart_side == P1 else curr_hearts[::-1]
         bars[heart_side]["round_count"] = html.Div(curr_hearts)
 
-    return bars["p1"]["round_count"], bars["p2"]["round_count"],\
-            bars["p1"]["health"], bars["p2"]["health"],\
-            bars["p1"]["burst"], bars["p2"]["burst"],\
-            bars["p1"]["tension"], bars["p2"]["tension"],\
-            bars["p1"]["counter"], bars["p2"]["counter"],\
+    return bars[P1]["round_count"], bars[P2]["round_count"],\
+            bars[P1]["health"], bars[P2]["health"],\
+            bars[P1]["burst"], bars[P2]["burst"],\
+            bars[P1]["tension"], bars[P2]["tension"],\
+            bars[P1]["counter"], bars[P2]["counter"],\
+            spells[P1]['spell'], spells['p2']['spell'],\
+            spells[P1]['percentile'], spells['p2']['percentile'],\
             bars['round_win_prob'], bars['set_win_prob']
 
-@app.callback(
-    Output('spells', 'children'),
-    Input('asuka_graph', 'hoverData')
-)
-def display_asuka_hover_data(hoverData):
-    if hoverData != None:
-        columns = [dbc.Col(), dbc.Col()]
-        for trace in hoverData["points"]:
-            player_data = trace["customdata"]
-            spells = []
-            for spell in player_data[ASUKA_HD_INDEX["spell_1"]:ASUKA_HD_INDEX["spell_4"]+1]:
-                opactiy = 1.0 if spell != 'used_spell' else 0.0
-                src = app.get_asset_url(f'images/spells/{spell}.png')
-                style={"opacity": opactiy}
-                spells.append(html.Img(src=src, style=style, className='spell'))
-            row_index = 0
-            if player_data[ASUKA_HD_INDEX["player_side"]] == "p2":
-                row_index = 1
-            spells=[html.Div(spells, className="spell_background", style={"--colour": PLAYER_COLOURS[player_data[ASUKA_HD_INDEX["player_side"]]]})]
-            columns[row_index] = dbc.Col([dbc.Row([dbc.Label(f"{player_data[ASUKA_HD_INDEX['player_name']].upper()}", className='spell_label name_shadow', style={"--outline": PLAYER_COLOURS[player_data[ASUKA_HD_INDEX["player_side"]]]})], justify="center"),
-                                           dbc.Row(spells, justify="center"),
-                                           dbc.Row([dbc.Label(f"{trace['y']}%", className='spell_label')], justify="center")])
-        return columns
-    else:
-        return []
+# @app.callback(
+#     Output('spells', 'children'),
+#     Input('asuka_graph', 'hoverData')
+# )
+def display_asuka_spell_data(spell_data):
+    spells = {}
+    spells[P1] = {}
+    spells['p2'] = {}
+    spells[P1]['spell'] = html.Div()
+    spells['p2']['spell'] = html.Div()
+    spells[P1]['percentile'] = html.Div()
+    spells['p2']['percentile'] = html.Div()
+
+    for trace in spell_data:
+        player_data = trace["customdata"]
+        player_side = player_data[ASUKA_HD_INDEX["player_side"]]
+        spell_list = []
+        for spell in player_data[ASUKA_HD_INDEX["spell_1"]:ASUKA_HD_INDEX["spell_4"]+1]:
+            opactiy = 1.0 if spell != 'used_spell' else 0.0
+            src = app.get_asset_url(f'images/spells/{spell}.png')
+            style={"opacity": opactiy}
+            spell_list.append(html.Img(src=src, style=style, className='spell'))
+        spells[player_side]['spell'] = [html.Div(spell_list, className="spell_background")]
+        spells[player_side]['percentile'] = [dbc.Label(f"{trace['y']}%", className='spell_label')]
+
+    return spells
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=8080)

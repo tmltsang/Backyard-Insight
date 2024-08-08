@@ -4,10 +4,12 @@
 }
 
 .bar_container {
-    width:95%;
+    width:100%;
     margin-bottom: 15px;
     background-repeat:no-repeat;
     min-width: 0;
+    display:flex;
+    justify-content:center;
 }
 
 .p1 {
@@ -110,8 +112,7 @@
     background-size: 100% 100%;
     margin-bottom: 1%;
     position: relative;
-    box-shadow: var(--colour, red) 0px 5px 10px 3px;
-    width: 17.5%;
+    width: 25%;
     height: auto;
     display: flex;
     align-items: center;
@@ -193,8 +194,8 @@
 
 .win_prob_bar {
     background-image:
-        linear-gradient(red ,red ),
-        linear-gradient(blue,blue);
+        linear-gradient(rgba(239, 85, 59) ,rgba(239, 85, 59)),
+        linear-gradient(rgb(99, 110, 250),rgb(99, 110, 250));
     background-size: var(--w, 25%), 100%, 100%, 100%;
     background-position:left, right;
     background-repeat:no-repeat;
