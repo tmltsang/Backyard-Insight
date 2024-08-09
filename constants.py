@@ -1,4 +1,5 @@
 from dash import no_update
+import plotly.express as px
 
 P1 = 'p1'
 P2 = 'p2'
@@ -11,6 +12,25 @@ def PLAYER_COLOURS(player, opacity=1.0):
         return f'rgba(239, 85, 59, {opacity})'
     else:
         return f'rgb(99, 110, 250, {opacity})'
+
+VAR_COLOURS = {
+    P1: {
+        'health': px.colors.qualitative.Prism[6],
+        'burst': px.colors.qualitative.Prism[1],
+        'tension': px.colors.qualitative.Prism[3],
+    },
+    P2: {
+        'health': px.colors.qualitative.Prism[5],
+        'burst': px.colors.qualitative.Prism[2],
+        'tension': px.colors.qualitative.Prism[4],
+    }
+}
+
+STATS = [{'label': 'Psych Burst Count', 'value':'burst_count'},
+         {'label': 'Burst Bar Used', 'value':'burst_use'},
+         {'label': 'Tension Used', 'value':'tension_use'},
+         {'label': 'First Hit', 'value':'first_hit'},
+         {'label': 'Probability Lead', 'value':'prob_lead'},]
 
 WIN_PATTERN = ""
 LOSS_PATTERN = "/"

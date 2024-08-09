@@ -86,18 +86,20 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
 
     return fig
 
-def create_pie_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, stat_col_name, graph_title):
+def create_pie_match_stats_graph(match_stats_dff, stat_col_name, graph_title):
     rounds_index = match_stats_dff.index.unique(level='round_index')
     subplot_titles = ['Full Match', 'Round 1', 'Round 2', 'Round 3']
     num_graphs = len(rounds_index)+1
+    p1_set_win = match_stats_dff['p1_set_win'].iat[0]
 
     fig = make_subplots(1, num_graphs, subplot_titles=subplot_titles[:num_graphs], specs=[[{'type':'domain'}]*(num_graphs)])
     fig.update_annotations(font_size=20)
     p1_match_stat = round(match_stats_dff[f'p1_{stat_col_name}'].sum(), 2)
     p2_match_stat = round(match_stats_dff[f'p2_{stat_col_name}'].sum(), 2)
     annotations = list(fig.layout.annotations)
-    p1_player_name = p1_player_name.upper()
-    p2_player_name = p2_player_name.upper()
+    p1_player_name = match_stats_dff[f'p1_player_name'].iat[0].upper()
+    p2_player_name = match_stats_dff[f'p2_player_name'].iat[0].upper()
+    p1_round_win = match_stats_dff['p1_round_win'].groupby("round_index").first().tolist()
 
     shape=[LOSS_PATTERN, WIN_PATTERN] if p1_set_win else [WIN_PATTERN, LOSS_PATTERN]
     data = go.Pie(labels=[p2_player_name, p1_player_name],
@@ -130,12 +132,12 @@ def create_pie_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name
             if p1_stat + p2_stat == 0:
                 annotations.append(dict(text=f'No {graph_title}', x=annotations[round_num+1].x, y=0.5, xanchor='center', xref='paper', font_size=24, showarrow=False))
 
-    fig.update_traces(marker=dict(colors=[PLAYER_COLOURS(P2), PLAYER_COLOURS(P1)]), textposition='inside', hoverinfo='label+value', textinfo='label+value', textfont_size=20, )
+    fig.update_traces(marker=dict(colors=[PLAYER_COLOURS(P2), PLAYER_COLOURS(P1)]), textposition='inside', hoverinfo='label+value', textinfo='label+value', textfont_size=20, textfont_color="white",)
     fig.update_layout(title_text=graph_title, title_font_size=24, showlegend=False, template='plotly_dark', uniformtext_mode='hide', font_family="GGFont_STRIVE", uniformtext_minsize=10, annotations=annotations)
     return fig
 
 
-def create_sunburst_match_stats_graph(match_stats_dff, stat_col_name, graph_title, player_root=True):
+def create_sunburst_match_stats_graph(match_stats_dff, stat_col_name, graph_title, player_root=True, isPercent=False):
     match_stats_dff.index.unique(level='round_index')
     rounds_index = match_stats_dff.index.unique(level='round_index')
     num_rounds = len(rounds_index)
@@ -149,6 +151,8 @@ def create_sunburst_match_stats_graph(match_stats_dff, stat_col_name, graph_titl
     colours = []
     parents = []
     labels = []
+    texttemplate = []
+    info = "%{percentParent:.1%}" if isPercent else "%{value}"
     if player_root:
         for player in [P1, P2]:
             if match_stats_dff[f'{player}_{stat_col_name}'].sum() != 0:
@@ -162,6 +166,7 @@ def create_sunburst_match_stats_graph(match_stats_dff, stat_col_name, graph_titl
                 values += [total_value] +  match_stats_dff[f'{player}_{stat_col_name}'].astype(type(total_value)).to_list()
                 pattern += [WIN_PATTERN if set_win else LOSS_PATTERN] + [WIN_PATTERN if curr_round_win else LOSS_PATTERN for curr_round_win in round_win]
                 colours += [PLAYER_COLOURS(player)] + [PLAYER_COLOURS(player, opacity=0.7)]*num_rounds
+                texttemplate += ["%{label}<br>"+info] *(num_rounds+1)
     else:
         for round_index in rounds_index:
             p1_value = round(match_stats_dff.loc[round_index,f'p1_{stat_col_name}'].astype(float), 1)
@@ -176,10 +181,10 @@ def create_sunburst_match_stats_graph(match_stats_dff, stat_col_name, graph_titl
                 values += [total_value, p1_value, p2_value]
                 pattern += [""]*3
                 colours += [PLAYER_COLOURS(P1) if match_stats_dff.loc[round_index, 'p1_round_win'] else PLAYER_COLOURS(P2), PLAYER_COLOURS(P1), PLAYER_COLOURS(P2)]
+                texttemplate += ["%{label}"] + ["%{label}<br>"+info] * 2
     # values = [match_stats_dff[f'p1_{stat_col_name}'].sum(), match_stats_dff[f'p2_{stat_col_name}'].sum()] + match_stats_dff[f'p1_{stat_col_name}'].astype(int).to_list() + match_stats_dff[f'p2_{stat_col_name}'].astype(int).to_list()
     # pattern = [WIN_PATTERN, LOSS_PATTERN] if p1_set_win else [LOSS_PATTERN, WIN_PATTERN]
     # pattern +=  [WIN_PATTERN if p1_round_win else LOSS_PATTERN for p1_round_win in match_stats_dff['p1_round_win']] + [WIN_PATTERN if p2_round_win else LOSS_PATTERN for p2_round_win in ~match_stats_dff['p1_round_win']]
-
     fig = go.Figure(go.Sunburst(
         ids=curr_ids,
         labels=labels,
@@ -188,7 +193,9 @@ def create_sunburst_match_stats_graph(match_stats_dff, stat_col_name, graph_titl
         branchvalues="total",
         textfont_size=24,
         textfont_color="white",
-        textinfo = "label",
+        texttemplate=texttemplate,
+        hovertemplate=texttemplate,
+        name=graph_title,
         marker=dict(
             pattern=dict(
                 shape=pattern,
@@ -204,6 +211,29 @@ def create_sunburst_match_stats_graph(match_stats_dff, stat_col_name, graph_titl
     #print(fig)
     return fig
 
+def create_bar_match_stats_graph(match_stats_dff, stat_col_name, graph_title):
+    match_stats_dff.index.unique(level='round_index')
+    rounds_index = match_stats_dff.index.unique(level='round_index')
+    num_rounds = len(rounds_index)
+    #p1_set_win = match_stats_dff['p1_set_win'].iat[0]
+    rounds = ["Round 1", "Round 2", "Round 3"]
+    fig = go.Figure(data=[
+        go.Bar(name=match_stats_dff[f'{P1}_player_name'].iat[0].upper(), x=rounds[:num_rounds], y=match_stats_dff[f'{P1}_{stat_col_name}']),
+        go.Bar(name=match_stats_dff[f'{P2}_player_name'].iat[0].upper(), x=rounds[:num_rounds], y=match_stats_dff[f'{P2}_{stat_col_name}'])
+    ])
+
+    fig.update_layout(title_text=graph_title, title_font_size=24, showlegend=False, template='plotly_dark', font_family="GGFont_STRIVE")
+    return fig
+
+def combine_graphs_row(figure_list, graph_title):
+    full_trace_list = [f for fig in figure_list for f in fig.data]
+    trace_list_name = [trace.name for trace in full_trace_list]
+    fig = make_subplots(1, len(full_trace_list), subplot_titles=trace_list_name, specs=[[{'type':'domain'}]*len(full_trace_list)])
+    for i in range(len(full_trace_list)):
+        fig.add_trace(full_trace_list[i], row=1, col=i+1)
+    fig.update_layout(title_text=graph_title, title_font_size=24, showlegend=False, template='plotly_dark', font_family="GGFont_STRIVE")
+    return fig
+
 
 def create_asuka_graph(fig, asuka_stats_dff, p1_player_name, p2_player_name):
 
@@ -212,9 +242,21 @@ def create_asuka_graph(fig, asuka_stats_dff, p1_player_name, p2_player_name):
     for player in asuka_stats_dff.index.unique(level='player_side'):
         player_dff = asuka_stats_dff.loc[player]
         fig.add_trace(go.Scatter(x=player_dff['set_time'], y=player_dff['spell_percentile_svc'], xaxis='x', yaxis='y1', name=f'Spell Percentile',
-                               mode='lines', legendgroup=names[player], showlegend=True, line=dict(color=PLAYER_COLOURS(player), dash='dash', shape="hv"),
-                               hovertemplate=names[player].capitalize() + ": %{y:.1f}"))
+                               mode='lines', legendgroup=names[player], showlegend=True, visible='legendonly', line=dict(color=PLAYER_COLOURS(player), dash='dash', shape="linear"),
+                               hovertemplate=names[player].capitalize() + ": %{y:.1f}%"))
 
+    return fig
+
+def add_misc_graph_data(fig, dff, p1_player_name, p2_player_name):
+
+    names = {P1: p1_player_name,
+             P2: p2_player_name}
+    for player in [P1, P2]:
+        for var in ['health', 'burst', 'tension']:
+            y = dff[f'{player}_{var}']*100
+            fig.add_trace(go.Scatter(x=dff[f'set_time'], y=y, xaxis='x', yaxis='y1', name=var.capitalize(),
+                                mode='lines', legendgroup=names[player], showlegend=True, visible='legendonly', line=dict(color=VAR_COLOURS[player][var], dash='dash', shape="linear"),
+                                hovertemplate=names[player].capitalize() + ": %{y:.1f}%"))
     return fig
 
 def placeholder_graph():

@@ -113,6 +113,8 @@ pred_graph_tab = dbc.Card(
 
 match_stats = dbc.Card(
     dbc.CardBody([
+        dbc.Label("Stat"),
+        dcc.Dropdown(STATS, clearable=False, id='stat-selection', className="dbc"),
         dcc.Graph(id='burst_graph', style={'height': '45vh', 'visibility': 'hidden'}),
         dcc.Graph(id='burst_bar_graph', style={'height': '45vh', 'visibility': 'hidden'}),
         dcc.Graph(id='tension_graph', style={'height': '45vh', 'visibility': 'hidden'}),
@@ -132,7 +134,6 @@ app.layout = dbc.Container(
                 dbc.Tabs([
                     dbc.Tab(pred_graph_tab, id="pred_tab", tab_id="pred_tab", label="Match Prediction"),
                     dbc.Tab(match_stats, id="match_tab", tab_id="match_tab", label="Match Stats"),
-#                    dbc.Tab(asuka_stats, id="asuka_tab", tab_id="asuka_tab", label="Asuka Spells", tab_style={'display': 'none'})
                 ], id="tabs", active_tab="pred_tab")
             ], width={"size": 10}),
         ])
@@ -205,8 +206,6 @@ def update_graph(tr, set_num, active_tab, tournament):
     p1_char_name = dff['p1_name'].iat[0]
     p2_char_name = dff['p2_name'].iat[0]
 
-    p1_set_win = dff['p1_set_win'].iat[0]
-    p1_round_win = dff['p1_round_win'].groupby("round_index").first().tolist()
     fig = graph.create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char_name)
     if df_asuka_stats.index.isin([(tournament, tr, set_num)]).any():
         asuka_stats_dff = df_asuka_stats.loc[(tournament, tr, set_num)]
@@ -216,16 +215,20 @@ def update_graph(tr, set_num, active_tab, tournament):
         if active_tab == 'asuka_tab':
             active_tab = 'pred_tab'
 
+    fig = graph.add_misc_graph_data(fig, dff,  p1_player_name, p2_player_name,)
+
     match_stats_style = {'height': '45vh', 'visibility': 'visible'}
-    burst_match_stats_fig = graph.create_pie_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'burst_count', 'Psych Burst Count')
-    burst_bar_match_stats_fig = graph.create_pie_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'burst_use', 'Burst Bar Used')
-    tension_match_stats_fig = graph.create_pie_match_stats_graph(match_stats_dff, p1_player_name, p2_player_name, p1_set_win, p1_round_win, 'tension_use', 'Tension Used')
+    burst_match_stats_fig = graph.create_pie_match_stats_graph(match_stats_dff, 'burst_count', 'Psych Burst Count')
+    burst_bar_match_stats_fig = graph.create_pie_match_stats_graph(match_stats_dff, 'burst_use', 'Burst Bar Used')
+    tension_match_stats_fig = graph.create_pie_match_stats_graph(match_stats_dff,  'tension_use', 'Tension Used')
     # burst_match_stats_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'burst_count', 'Psych Burst Count', player_root=False)
     # burst_bar_match_stats_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'burst_use', 'Burst Bar Used', player_root=False)
     # tension_match_stats_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'tension_use', 'Tension Used', player_root=False)
-    fh_match_stats_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'first_hit', 'First Hits', player_root=False)
+    fh_match_stats_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'first_hit', 'First Hits', player_root=True, isPercent=False)
 
-    lead_match_stats_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'first_hit', 'First Hits', player_root=False)
+    round_lead_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'round_lead', 'Round Probability Lead', player_root=False, isPercent=True)
+    match_lead_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'set_lead', 'Match Probability Lead', player_root=False, isPercent=True)
+    lead_match_stats_fig =graph.combine_graphs_row([round_lead_fig, match_lead_fig], "Probability Lead")
 
     p1_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p1_char_name}.png'), className="player_portrait"), html.Div([p1_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS(P1)})]
     p2_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p2_char_name}.png'), className="player_portrait"), html.Div([p2_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS(P2)})]
