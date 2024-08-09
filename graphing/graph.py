@@ -1,7 +1,4 @@
 from plotly.subplots import make_subplots
-import statsmodels.api as sm
-import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 from constants import *
 import numpy as np
@@ -16,83 +13,76 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
         xaxis_title = 'Time',
         yaxis = dict(
             ticksuffix = '%',
-            title = "Probability"
         ),
         hoverlabel=dict(
             font_size=20,
-        )
+        ),
+        title="Match Prediction",
     )
 
-    custom_data_cols = ['health', 'tension', 'burst', 'counter', 'curr_damaged', 'round_count', 'name', 'player_name']
-    cols = {}
-    for player in [P1, P2]:
-        cols[player] = pd.DataFrame(dff[[player+"_"+col for col in custom_data_cols]])
-        cols[player]["side"] = player
-
-    current_set_pred_smooth = 100 * (sm.nonparametric.lowess(dff['current_set_pred'], dff['set_time'], frac=0.1)[:, 1])
+    current_set_pred_smooth = 100*dff['smooth_set_pred']
     data = []
-    round_pred_smooth = []
-    for round_index in dff.index.unique(level='round_index'):
-        round_dff = dff.loc[round_index]
-        current_round_pred_smooth = 100 * (sm.nonparametric.lowess(round_dff['current_round_pred'], round_dff['set_time'], frac=0.1)[:, 1])
-        round_pred_smooth = np.concatenate((round_pred_smooth, current_round_pred_smooth))
-        data.append(go.Scatter(x=round_dff['set_time'],
-                               y=current_round_pred_smooth,
-                               xaxis='x',
-                               yaxis='y1',
-                               name=p1_player_name.capitalize(),
-                               mode='lines',
-                               legendgroup=p1_player_name,
-                               showlegend=False,
-                               line=dict(color=PLAYER_COLOURS(P1)),
-                               hovertemplate="Round Win: %{y:.1f}%"))
-        data.append(go.Scatter(x=round_dff['set_time'],
-                               y=100-current_round_pred_smooth,
-                               xaxis='x', yaxis='y1',
-                               name=p2_player_name.capitalize(), mode='lines',
-                               legendgroup=p2_player_name,
-                               showlegend=False,
-                               line=dict(color=PLAYER_COLOURS(P2)),
-                               hovertemplate="Round Win: %{y:.1f}%"))
+    round_pred_smooth = 100*dff['smooth_round_pred']
+
+    data.append(go.Scatter(x=dff['set_time'],
+                            y=round_pred_smooth,
+                            xaxis='x',
+                            yaxis='y1',
+                            name='Round Win %',
+                            mode='lines',
+                            legendgroup=p1_player_name,
+                            legendgrouptitle_text=p1_player_name.upper(),
+                            showlegend=True,
+                            line=dict(color=PLAYER_COLOURS(P1)),
+                            hovertemplate=p1_player_name.capitalize() + ": %{y:.1f}%"))
+    data.append(go.Scatter(x=dff['set_time'],
+                            y=100-round_pred_smooth,
+                            xaxis='x', yaxis='y1',
+                            name='Round Win %',
+                            mode='lines',
+                            legendgroup=p2_player_name,
+                            legendgrouptitle_text=p2_player_name.upper(),
+                            showlegend=True,
+                            line=dict(color=PLAYER_COLOURS(P2)),
+                            hovertemplate=p2_player_name.capitalize() + ":%{y:.1f}%"))
+
     round_pred_smooth_dict =dict([(key, value) for _, (key, value) in enumerate(zip(dff['set_time'], round_pred_smooth))])
-    cols[P1]['round_win'] = round_pred_smooth
-    cols[P2]['round_win'] = 100-round_pred_smooth
     data.extend([go.Scatter(x=dff['set_time'],
                             y=current_set_pred_smooth,
                             xaxis='x',
                             yaxis='y1',
-                            name=p1_player_name.capitalize(),
+                            name='Match Win %',
                             mode='lines',
-                            customdata=cols[P1],
                             legendgroup=p1_player_name,
-                            showlegend=False,
-                            line=dict(color=PLAYER_COLOURS(P1)),
-                            hovertemplate="Match Win: %{y:.1f}%"),
+                            showlegend=True,
+                            line=dict(color=PLAYER_COLOURS(P1),
+                                      dash='dot'),
+                            hovertemplate=p1_player_name.capitalize() + ": %{y:.1f}%"),
                  go.Scatter(x=dff['set_time'],
                             y=100-current_set_pred_smooth,
                             xaxis='x',
                             yaxis='y1',
-                            name=p2_player_name.capitalize(),
+                            name='Match Win %',
                             mode='lines',
-                            customdata=cols[P2],
                             legendgroup=p2_player_name,
-                            showlegend=False,
-                            line=dict(color=PLAYER_COLOURS(P2)),
-                            hovertemplate="Match Win: %{y:.1f}%")])
+                            showlegend=True,
+                            line=dict(color=PLAYER_COLOURS(P2),
+                                      dash='dot'),
+                            hovertemplate=p2_player_name.capitalize() + ": %{y:.1f}%")])
     fig = go.Figure(data=data, layout=layout)
 
     final_round_times  = dff.groupby(['round_index']).tail(1)
     final_set_time  = final_round_times['set_time'].iat[-1]
     for p2_round_win_time in final_round_times.loc[final_round_times['p1_round_win']==False,'set_time']:
+        fig.add_layout_image(dict(xref="x", yref="y1", layer="above", sizex=5, sizey=10, x=(p2_round_win_time-1.5), y=(100-round_pred_smooth_dict[p2_round_win_time])+ 5, source=f"{CDN_URL}assets/images/portraits/{p2_char_name}.png"))
         fig.add_vline(x=p2_round_win_time, line_width=2, layer='below', line_color=PLAYER_COLOURS(P2), annotation_text=f'{p2_player_name.upper()} wins', annotation_position="top right", row='all',col='all')
-        fig.add_layout_image(dict(xref="x", yref="y1", sizex=5, sizey=10, x=(p2_round_win_time-1.5), y=(100-round_pred_smooth_dict[p2_round_win_time])+ 5, source=f"{CDN_URL}assets/images/portraits/{p2_char_name}.png"))
     for p1_round_win_time in final_round_times.loc[final_round_times['p1_round_win']==True, 'set_time']:
-        fig.add_vline(x=p1_round_win_time, line_width=2, layer='below', line_color=PLAYER_COLOURS(P1), annotation_text=f'{p1_player_name.upper()} wins', annotation_position="top right", col='all')
         fig.add_layout_image(dict(xref="x", yref="y1", layer="above", sizex=5, sizey=10, x=(p1_round_win_time-1.25), y=round_pred_smooth_dict[p1_round_win_time] + 5, source=f"{CDN_URL}assets/images/portraits/{p1_char_name}.png"))
+        fig.add_vline(x=p1_round_win_time, line_width=2, layer='below', line_color=PLAYER_COLOURS(P1), annotation_text=f'{p1_player_name.upper()} wins', annotation_position="top right", col='all')
 
-    fig.update_xaxes(showticklabels=False)
-    fig.update_xaxes(range=[0, final_set_time+5], automargin=True)
+    fig.update_xaxes(showticklabels=False, range=[0, final_set_time+5], automargin=True)
     fig.update_yaxes(range=[0, 100],automargin=True)
+    fig.update_layout(legend=dict(groupclick="toggleitem"))
 
     return fig
 
@@ -220,11 +210,10 @@ def create_asuka_graph(fig, asuka_stats_dff, p1_player_name, p2_player_name):
     names = {P1: p1_player_name,
              P2: p2_player_name}
     for player in asuka_stats_dff.index.unique(level='player_side'):
-        player_dff = asuka_stats_dff.reset_index(level="round_index").loc[player]
-        fig.add_trace(go.Scatter(x=player_dff['set_time'], y=player_dff['spell_percentile_svc'], xaxis='x', yaxis='y1', name=f'{names[player].capitalize()}\'s Spells',
-                               mode='lines', showlegend=True, line=dict(color=PLAYER_COLOURS(player), dash='dash', shape="hv"),
-                               customdata=player_dff.reset_index()[['asuka_spell_1','asuka_spell_2', 'asuka_spell_3', 'asuka_spell_4', 'player_side', f'{player}_player_name']],
-                               hovertemplate="Spell Percentile: %{y:.1f}"))
+        player_dff = asuka_stats_dff.loc[player]
+        fig.add_trace(go.Scatter(x=player_dff['set_time'], y=player_dff['spell_percentile_svc'], xaxis='x', yaxis='y1', name=f'Spell Percentile',
+                               mode='lines', legendgroup=names[player], showlegend=True, line=dict(color=PLAYER_COLOURS(player), dash='dash', shape="hv"),
+                               hovertemplate=names[player].capitalize() + ": %{y:.1f}"))
 
     return fig
 
