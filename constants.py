@@ -7,7 +7,7 @@ P2 = 'p2'
 # PLAYER_COLOURS = {'p1': 'rgb(239, 85, 59)',
 #                   'p2': 'rgb(99, 110, 250)'}
 
-def PLAYER_COLOURS(player, opacity=1.0):
+def PLAYER_COLOURS(player, opacity=0.8):
     if player == P1:
         return f'rgba(239, 85, 59, {opacity})'
     else:
@@ -26,11 +26,16 @@ VAR_COLOURS = {
     }
 }
 
-STATS = [{'label': 'Psych Burst Count', 'value':'burst_count'},
-         {'label': 'Burst Bar Used', 'value':'burst_use'},
-         {'label': 'Tension Used', 'value':'tension_use'},
-         {'label': 'First Hit', 'value':'first_hit'},
-         {'label': 'Probability Lead', 'value':'prob_lead'},]
+STAT_TITLE = {'burst_count': 'Psych Burst Count',
+         'burst_use': 'Burst Bar Used',
+         'tension_use': 'Tension Used',
+         'first_hit': 'First Hit',
+         'round_lead': 'Round Probability Lead',
+         'set_lead': 'Set Probability Lead',}
+
+STAT_OPTIONS = [{'label': title, 'value': value}for value, title in STAT_TITLE.items()]
+
+
 
 WIN_PATTERN = ""
 LOSS_PATTERN = "/"

@@ -113,13 +113,11 @@ pred_graph_tab = dbc.Card(
 
 match_stats = dbc.Card(
     dbc.CardBody([
-        dbc.Label("Stat"),
-        dcc.Dropdown(STATS, clearable=False, id='stat-selection', className="dbc"),
-        dcc.Graph(id='burst_graph', style={'height': '45vh', 'visibility': 'hidden'}),
-        dcc.Graph(id='burst_bar_graph', style={'height': '45vh', 'visibility': 'hidden'}),
-        dcc.Graph(id='tension_graph', style={'height': '45vh', 'visibility': 'hidden'}),
-        dcc.Graph(id='stats_graph', style={'height': '45vh', 'visibility': 'hidden'}),
-        dcc.Graph(id='lead_graph', style={'height': '45vh', 'visibility': 'hidden'})
+        dbc.Label('Stat'),
+        dcc.Dropdown(STAT_OPTIONS, 'burst_count', clearable=False, id='stat-selection', className='dbc'),
+        dbc.Label('Graph Type'),
+        dcc.Dropdown(['Pie', 'Sunburst', 'Bar'], 'Pie', clearable=False, id='graph-selection', className='dbc'),
+        dcc.Graph(id='match_stats_graph', style={'height': '90vh', 'visibility': 'hidden'}),
     ])
 )
 
@@ -174,20 +172,23 @@ def set_initial_set_value(options):
     return options[0]['value']
 
 @app.callback(
+    [Output('match_stats_graph', 'figure'),
+    Output('match_stats_graph', 'style')],
+    [Input('stat-selection', 'value'),
+     Input('graph-selection', 'value'),
+    Input('tr-selection', 'value'),
+    Input('set-selection', 'value'),],
+    [State('tournament-selection', 'value'),]
+)
+def display_match_stats(stat_selection, graph_type, tr, set_num, tournament):
+    match_stats_dff = df_match_stats.loc[(tournament, tr, set_num)]
+    return create_match_stats_fig(match_stats_dff, graph_type, stat_selection, STAT_TITLE[stat_selection]), {'height': '90vh', 'visibility': 'visible'}
+
+@app.callback(
     [Output('p1_char_portrait', 'children'),
     Output('p2_char_portrait', 'children'),
     Output('pred_graph', 'figure'),
     Output('pred_graph', 'style'),
-    Output('burst_graph', 'figure'),
-    Output('burst_graph', 'style'),
-    Output('burst_bar_graph', 'figure'),
-    Output('burst_bar_graph', 'style'),
-    Output('tension_graph', 'figure'),
-    Output('tension_graph', 'style'),
-    Output('stats_graph', 'figure'),
-    Output('stats_graph', 'style'),
-    Output('lead_graph', 'figure'),
-    Output('lead_graph', 'style'),
     Output('spell_info', 'style'),
     Output('spell_info', 'children'),],
     [Input('tr-selection', 'value'),
@@ -197,7 +198,6 @@ def set_initial_set_value(options):
 )
 def update_graph(tr, set_num, active_tab, tournament):
     dff = df.loc[(tournament, tr, set_num)]
-    match_stats_dff = df_match_stats.loc[(tournament, tr, set_num)]
     asuka_stats_dff = None
     spell_info_style = {'display': 'none'}
     p1_player_name = dff['p1_player_name'].iat[0]
@@ -217,29 +217,23 @@ def update_graph(tr, set_num, active_tab, tournament):
 
     fig = graph.add_misc_graph_data(fig, dff,  p1_player_name, p2_player_name,)
 
-    match_stats_style = {'height': '45vh', 'visibility': 'visible'}
-    burst_match_stats_fig = graph.create_pie_match_stats_graph(match_stats_dff, 'burst_count', 'Psych Burst Count')
-    burst_bar_match_stats_fig = graph.create_pie_match_stats_graph(match_stats_dff, 'burst_use', 'Burst Bar Used')
-    tension_match_stats_fig = graph.create_pie_match_stats_graph(match_stats_dff,  'tension_use', 'Tension Used')
-    # burst_match_stats_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'burst_count', 'Psych Burst Count', player_root=False)
-    # burst_bar_match_stats_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'burst_use', 'Burst Bar Used', player_root=False)
-    # tension_match_stats_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'tension_use', 'Tension Used', player_root=False)
-    fh_match_stats_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'first_hit', 'First Hits', player_root=True, isPercent=False)
-
-    round_lead_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'round_lead', 'Round Probability Lead', player_root=False, isPercent=True)
-    match_lead_fig = graph.create_sunburst_match_stats_graph(match_stats_dff, 'set_lead', 'Match Probability Lead', player_root=False, isPercent=True)
-    lead_match_stats_fig =graph.combine_graphs_row([round_lead_fig, match_lead_fig], "Probability Lead")
+    # match_stats_style = {'height': '90vh', 'visibility': 'visible'}
+    # match_stats_fig = create_match_stats_fig(match_stats_dff, stat_selection, stat_label)
 
     p1_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p1_char_name}.png'), className="player_portrait"), html.Div([p1_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS(P1)})]
     p2_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p2_char_name}.png'), className="player_portrait"), html.Div([p2_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS(P2)})]
 
     return p1_player_name_div, p2_player_name_div, fig,  {'height': '50vh', 'visibility': 'visible'},\
-            burst_match_stats_fig, match_stats_style,\
-            burst_bar_match_stats_fig, match_stats_style,\
-            tension_match_stats_fig, match_stats_style,\
-            fh_match_stats_fig, match_stats_style,\
-            lead_match_stats_fig, match_stats_style,\
             spell_info_style, default_spell_info
+
+def create_match_stats_fig(match_stats_dff, graph_type, stat_selection, stat_label):
+    fig = graph.placeholder_graph()
+    match stat_selection:
+        case 'round_lead'| 'set_lead':
+            fig = graph.create_match_stats_graph(graph_type, match_stats_dff, stat_selection, stat_label, player_root=False, is_percent=True)
+        case _:
+            fig = graph.create_match_stats_graph(graph_type, match_stats_dff, stat_selection, stat_label)
+    return fig
 
 @app.callback(
     Output('p1_round_count', 'children'),
