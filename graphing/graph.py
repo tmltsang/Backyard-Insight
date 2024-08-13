@@ -102,8 +102,6 @@ def create_pie_match_stats_graph(match_stats_dff, stat_col_name, graph_title, is
     p1_round_win = match_stats_dff['p1_round_win'].groupby("round_index").first().tolist()
 
     shape=[WIN_PATTERN, LOSS_PATTERN] * 2
-    print(p1_match_stat)
-    print([p2_match_stat*~p1_set_win, p2_match_stat*p1_set_win, p1_match_stat*p1_set_win, p1_match_stat*~p1_set_win])
     data = go.Pie(
                 labels=[f'{p2_player_name} Win', f'{p2_player_name} Loss', f'{p1_player_name} Win', f'{p1_player_name} Loss'],
                 values=[p2_match_stat*~p1_set_win, p2_match_stat*p1_set_win, p1_match_stat*p1_set_win, p1_match_stat*~p1_set_win] ,
@@ -212,7 +210,6 @@ def create_sunburst_match_stats_graph(match_stats_dff, stat_col_name, graph_titl
 
     fig.update_traces(leaf=dict(opacity = 0.7))
     fig.update_layout(title_text=graph_title, title_font_size=24, showlegend=False, template='plotly_dark', font_family="GGFont_STRIVE")
-    #print(fig)
     return fig
 
 def create_bar_match_stats_graph(match_stats_dff, stat_col_name, graph_title, is_percent=False):
@@ -223,14 +220,22 @@ def create_bar_match_stats_graph(match_stats_dff, stat_col_name, graph_title, is
     p1_round_win = match_stats_dff[f'p1_round_win']
     p1_name = match_stats_dff[f'{P1}_player_name'].iat[0].upper()
     p2_name = match_stats_dff[f'{P2}_player_name'].iat[0].upper()
-    rounds = ["Round 1", "Round 2", "Round 3"]
+
+    p1_match_stat = round(match_stats_dff[f'p1_{stat_col_name}'].sum(), 2)
+    p2_match_stat = round(match_stats_dff[f'p2_{stat_col_name}'].sum(), 2)
+
+    p1_set_win = match_stats_dff['p1_set_win'].iat[0]
+    p2_set_win = not p1_set_win
+
+    rounds = ["Full Match", "Round 1", "Round 2", "Round 3"]
     barnorm = 'percent' if is_percent else ''
     hovertemplate = '<br>%{y:.1f}%' if is_percent else '<br>%{y:.1f}'
+
     fig = go.Figure(data=[
-        go.Bar(name=f'Win', x=rounds[:num_rounds], y=match_stats_dff[f'{P1}_{stat_col_name}'] * p1_round_win, marker_color=PLAYER_COLOURS(P1), hovertemplate=p1_name+hovertemplate, legendgroup=p1_name, offsetgroup=0, legendgrouptitle_text=p1_name,),
-        go.Bar(name=f'Win', x=rounds[:num_rounds], y=match_stats_dff[f'{P2}_{stat_col_name}'] * ~p1_round_win, marker_color=PLAYER_COLOURS(P2), hovertemplate=p2_name+hovertemplate, legendgroup=p2_name, offsetgroup=1, legendgrouptitle_text=p2_name),
-        go.Bar(name=f'Loss', x=rounds[:num_rounds], y=match_stats_dff[f'{P1}_{stat_col_name}'] * ~p1_round_win, marker_color=PLAYER_COLOURS(P1), hovertemplate=p1_name+hovertemplate, legendgroup=p1_name, offsetgroup=0, marker_pattern_shape=LOSS_PATTERN),
-        go.Bar(name=f'Loss', x=rounds[:num_rounds], y=match_stats_dff[f'{P2}_{stat_col_name}'] * p1_round_win, marker_color=PLAYER_COLOURS(P2), hovertemplate=p2_name+hovertemplate, legendgroup=p2_name, offsetgroup=1, marker_pattern_shape=LOSS_PATTERN)
+        go.Bar(name=f'Win', x=rounds[:num_rounds+1], y=[p1_match_stat*p1_set_win] + (match_stats_dff[f'{P1}_{stat_col_name}'] * p1_round_win).tolist(), marker_color=PLAYER_COLOURS(P1), hovertemplate=p1_name+hovertemplate, legendgroup=p1_name, offsetgroup=0, legendgrouptitle_text=p1_name,),
+        go.Bar(name=f'Win', x=rounds[:num_rounds+1], y=[p2_match_stat*p2_set_win] + (match_stats_dff[f'{P2}_{stat_col_name}'] * ~p1_round_win).tolist(), marker_color=PLAYER_COLOURS(P2), hovertemplate=p2_name+hovertemplate, legendgroup=p2_name, offsetgroup=1, legendgrouptitle_text=p2_name),
+        go.Bar(name=f'Loss', x=rounds[:num_rounds+1], y=[p1_match_stat*p2_set_win] + (match_stats_dff[f'{P1}_{stat_col_name}'] * ~p1_round_win).tolist(), marker_color=PLAYER_COLOURS(P1), hovertemplate=p1_name+hovertemplate, legendgroup=p1_name, offsetgroup=0, marker_pattern_shape=LOSS_PATTERN),
+        go.Bar(name=f'Loss', x=rounds[:num_rounds+1], y=[p2_match_stat*p1_set_win] + (match_stats_dff[f'{P2}_{stat_col_name}'] * p1_round_win).tolist(), marker_color=PLAYER_COLOURS(P2), hovertemplate=p2_name+hovertemplate, legendgroup=p2_name, offsetgroup=1, marker_pattern_shape=LOSS_PATTERN)
 
     ])
     fig.update_layout(title_text=graph_title, title_font_size=24, showlegend=True, legend_font_size=18, barnorm=barnorm, template='plotly_dark', font_family="verdana")
