@@ -46,12 +46,12 @@ hearts_default = [html.Img(src=app.get_asset_url(FULL_HEART), className="sub_hea
 default_spell_info = [
                         dbc.Row([
                             dbc.Col(id="p1_spell", className="p1", width=5),
-                            dbc.Label("Spells", className="bar_label"),
+                            dbc.Label(["Spells"], className="bar_label"),
                             dbc.Col(id="p2_spell", className="p2", width=5),
                         ], justify='center'),
                         dbc.Row([
                             dbc.Col([html.Div([])], id="p1_spell_percentile", className="p1", width=5),
-                            dbc.Label("Spell Percentile", className="bar_label"),
+                            dbc.Label(["Spell",html.Br() ,"Percentile"], className="bar_label"),
                             dbc.Col([html.Div([])], id="p2_spell_percentile", className="p2", width=5),
                         ], justify='center'),
                     ]
@@ -63,7 +63,7 @@ pred_graph_tab = dbc.Card(
             dbc.Col([
             dbc.Row([
                 dbc.Col([html.Div(hearts_default)], id="p1_round_count", className='p1', width=5),
-                dbc.Label("Round", className="bar_label"),
+                dbc.Label("Round", className="bar_label", style={'height': '100%'}),
                 dbc.Col([html.Div(hearts_default[::-1])], id="p2_round_count", className='p2', width=5),
             ], justify='center', style={"height": "15%"}),
             dbc.Row([
