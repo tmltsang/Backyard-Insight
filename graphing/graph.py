@@ -154,7 +154,7 @@ def create_sunburst_match_stats_graph(match_stats_dff, stat_col_name, graph_titl
     parents = []
     labels = []
     texttemplate = []
-    info = "%{percentParent:.1%}" if is_percent else "%{value}"
+    info = "%{percentParent:.1%}" if is_percent else "%{value:.1f}"
     if player_root:
         for player in [P1, P2]:
             if match_stats_dff[f'{player}_{stat_col_name}'].sum() != 0:
@@ -208,7 +208,7 @@ def create_sunburst_match_stats_graph(match_stats_dff, stat_col_name, graph_titl
         )
     ))
 
-    fig.update_traces(leaf=dict(opacity = 0.7))
+    fig.update_traces(leaf=dict(opacity = 0.7), sort=False)
     fig.update_layout(title_text=graph_title, title_font_size=24, showlegend=False, template='plotly_dark', font_family="GGFont_STRIVE")
     return fig
 
@@ -238,7 +238,7 @@ def create_bar_match_stats_graph(match_stats_dff, stat_col_name, graph_title, is
         go.Bar(name=f'Loss', x=rounds[:num_rounds+1], y=[p2_match_stat*p1_set_win] + (match_stats_dff[f'{P2}_{stat_col_name}'] * p1_round_win).tolist(), marker_color=PLAYER_COLOURS(P2), hovertemplate=p2_name+hovertemplate, legendgroup=p2_name, offsetgroup=1, marker_pattern_shape=LOSS_PATTERN)
 
     ])
-    fig.update_layout(title_text=graph_title, title_font_size=24, showlegend=True, legend_font_size=18, barnorm=barnorm, template='plotly_dark', font_family="verdana")
+    fig.update_layout(title_text=graph_title, title_font_size=24, showlegend=True, barnorm=barnorm, template='plotly_dark', font_family="GGFont_STRIVE", font_size=18)
     fig.update_xaxes(categoryorder='category ascending', dividerwidth=1)
     return fig
 

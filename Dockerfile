@@ -1,5 +1,5 @@
 #Using python
-FROM python:3.9-slim
+FROM python:3.10-slim
 WORKDIR /root/
 # Using Layered approach for the installation of requirements
 COPY requirements.txt ./requirements.txt
