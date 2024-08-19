@@ -1,7 +1,7 @@
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from constants import *
-import numpy as np
+import pandas as pd
 
 def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char_name):
     layout = dict(
@@ -18,42 +18,60 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
             font_size=20,
         ),
         title="Match Prediction",
+        legend=dict(
+            title=p1_player_name.upper(),
+            orientation='h',
+            yanchor="bottom",
+            y=1.15,
+            xanchor="right",
+            x=0.75
+        ),
+        legend2=dict(
+            title=p2_player_name.upper(),
+            orientation='h',
+            yanchor="bottom",
+            y=1.05,
+            xanchor="right",
+            x=0.75
+        )
     )
 
-    current_set_pred_smooth = 100*dff['smooth_set_pred']
+    current_set_pred_smooth = dff['smooth_set_pred'] * 100
     data = []
-    round_pred_smooth = 100*dff['smooth_round_pred']
+    for round_index in dff.index.unique(level='round_index'):
+        data.append(go.Scatter(x=dff.loc[round_index, 'set_time'],
+                                y=dff.loc[round_index, 'smooth_round_pred']*100,
+                                xaxis='x',
+                                yaxis='y1',
+                                name=f'Round Win %',
+                                mode='lines',
+                                legendgroup=f'{P1}_Round',
+                                #legendgrouptitle_text='Round Win %',
+                                legend='legend',
+                                showlegend=True if round_index==0 else False,
+                                line=dict(color=PLAYER_COLOURS(P1)),
+                                hovertemplate=p1_player_name.capitalize() + ": %{y:.1f}%"))
+        data.append(go.Scatter(x=dff.loc[round_index, 'set_time'],
+                                y=100-dff.loc[round_index, 'smooth_round_pred']*100,
+                                xaxis='x', yaxis='y1',
+                                name=f'Round Win %',
+                                mode='lines',
+                                legendgroup=f'{P2}_Round',
+                                #legendgrouptitle_text='Round Win %',
+                                legend='legend2',
+                                showlegend=True if round_index==0 else False,
+                                line=dict(color=PLAYER_COLOURS(P2)),
+                                hovertemplate=p2_player_name.capitalize() + ":%{y:.1f}%"))
 
-    data.append(go.Scatter(x=dff['set_time'],
-                            y=round_pred_smooth,
-                            xaxis='x',
-                            yaxis='y1',
-                            name='Round Win %',
-                            mode='lines',
-                            legendgroup=p1_player_name,
-                            legendgrouptitle_text=p1_player_name.upper(),
-                            showlegend=True,
-                            line=dict(color=PLAYER_COLOURS(P1)),
-                            hovertemplate=p1_player_name.capitalize() + ": %{y:.1f}%"))
-    data.append(go.Scatter(x=dff['set_time'],
-                            y=100-round_pred_smooth,
-                            xaxis='x', yaxis='y1',
-                            name='Round Win %',
-                            mode='lines',
-                            legendgroup=p2_player_name,
-                            legendgrouptitle_text=p2_player_name.upper(),
-                            showlegend=True,
-                            line=dict(color=PLAYER_COLOURS(P2)),
-                            hovertemplate=p2_player_name.capitalize() + ":%{y:.1f}%"))
-
-    round_pred_smooth_dict =dict([(key, value) for _, (key, value) in enumerate(zip(dff['set_time'], round_pred_smooth))])
+    #round_pred_smooth_dict =dict([(key, value) for _, (key, value) in enumerate(zip(dff['set_time'], round_pred_smooth))])
     data.extend([go.Scatter(x=dff['set_time'],
                             y=current_set_pred_smooth,
                             xaxis='x',
                             yaxis='y1',
                             name='Match Win %',
                             mode='lines',
-                            legendgroup=p1_player_name,
+                            # legendgroup=p1_player_name,
+                            legend="legend",
                             showlegend=True,
                             line=dict(color=PLAYER_COLOURS(P1),
                                       dash='dot'),
@@ -64,7 +82,8 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
                             yaxis='y1',
                             name='Match Win %',
                             mode='lines',
-                            legendgroup=p2_player_name,
+                            # legendgroup=p2_player_name,
+                            legend="legend2",
                             showlegend=True,
                             line=dict(color=PLAYER_COLOURS(P2),
                                       dash='dot'),
@@ -74,15 +93,15 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
     final_round_times  = dff.groupby(['round_index']).tail(1)
     final_set_time  = final_round_times['set_time'].iat[-1]
     for p2_round_win_time in final_round_times.loc[final_round_times['p1_round_win']==False,'set_time']:
-        fig.add_layout_image(dict(xref="x", yref="y1", layer="above", sizex=5, sizey=10, x=(p2_round_win_time-1.5), y=(100-round_pred_smooth_dict[p2_round_win_time])+ 5, source=f"{CDN_URL}assets/images/portraits/{p2_char_name}.png"))
+        fig.add_layout_image(dict(xref="x", yref="y1", layer="above", sizex=5, sizey=10, x=(p2_round_win_time-1.5), y=(100-dff.loc[dff['set_time']==p2_round_win_time, 'smooth_round_pred'].iat[0]*100+5), source=f"{CDN_URL}assets/images/portraits/{p2_char_name}.png"))
         fig.add_vline(x=p2_round_win_time, line_width=2, layer='below', line_color=PLAYER_COLOURS(P2), annotation_text=f'{p2_player_name.upper()} wins', annotation_position="top right", row='all',col='all')
     for p1_round_win_time in final_round_times.loc[final_round_times['p1_round_win']==True, 'set_time']:
-        fig.add_layout_image(dict(xref="x", yref="y1", layer="above", sizex=5, sizey=10, x=(p1_round_win_time-1.25), y=round_pred_smooth_dict[p1_round_win_time] + 5, source=f"{CDN_URL}assets/images/portraits/{p1_char_name}.png"))
+        fig.add_layout_image(dict(xref="x", yref="y1", layer="above", sizex=5, sizey=10, x=(p1_round_win_time-1.25), y=dff.loc[dff['set_time']==p1_round_win_time, 'smooth_round_pred'].iat[0]*100+5, source=f"{CDN_URL}assets/images/portraits/{p1_char_name}.png"))
         fig.add_vline(x=p1_round_win_time, line_width=2, layer='below', line_color=PLAYER_COLOURS(P1), annotation_text=f'{p1_player_name.upper()} wins', annotation_position="top right", col='all')
 
-    fig.update_xaxes(showticklabels=False, range=[0, final_set_time+5], automargin=True)
+    fig.update_xaxes(showticklabels=False, range=[0, final_set_time+5], automargin=True, showgrid=False)
     fig.update_yaxes(range=[0, 100],automargin=True)
-    fig.update_layout(legend=dict(groupclick="toggleitem"))
+    fig.update_layout(legend=dict(groupclick="togglegroup"))
 
     return fig
 
@@ -184,9 +203,6 @@ def create_sunburst_match_stats_graph(match_stats_dff, stat_col_name, graph_titl
                 pattern += [""]*3
                 colours += [PLAYER_COLOURS(P1) if match_stats_dff.loc[round_index, 'p1_round_win'] else PLAYER_COLOURS(P2), PLAYER_COLOURS(P1), PLAYER_COLOURS(P2)]
                 texttemplate += ["%{label}"] + ["%{label}<br>"+info] * 2
-    # values = [match_stats_dff[f'p1_{stat_col_name}'].sum(), match_stats_dff[f'p2_{stat_col_name}'].sum()] + match_stats_dff[f'p1_{stat_col_name}'].astype(int).to_list() + match_stats_dff[f'p2_{stat_col_name}'].astype(int).to_list()
-    # pattern = [WIN_PATTERN, LOSS_PATTERN] if p1_set_win else [LOSS_PATTERN, WIN_PATTERN]
-    # pattern +=  [WIN_PATTERN if p1_round_win else LOSS_PATTERN for p1_round_win in match_stats_dff['p1_round_win']] + [WIN_PATTERN if p2_round_win else LOSS_PATTERN for p2_round_win in ~match_stats_dff['p1_round_win']]
     fig = go.Figure(go.Sunburst(
         ids=curr_ids,
         labels=labels,
@@ -216,7 +232,6 @@ def create_bar_match_stats_graph(match_stats_dff, stat_col_name, graph_title, is
     match_stats_dff.index.unique(level='round_index')
     rounds_index = match_stats_dff.index.unique(level='round_index')
     num_rounds = len(rounds_index)
-    #p1_set_win = match_stats_dff['p1_set_win'].iat[0]
     p1_round_win = match_stats_dff[f'p1_round_win']
     p1_name = match_stats_dff[f'{P1}_player_name'].iat[0].upper()
     p2_name = match_stats_dff[f'{P2}_player_name'].iat[0].upper()
@@ -273,8 +288,9 @@ def add_misc_graph_data(fig, dff, p1_player_name, p2_player_name):
         for var in ['health', 'burst', 'tension']:
             y = dff[f'{player}_{var}']*100
             fig.add_trace(go.Scatter(x=dff[f'set_time'], y=y, xaxis='x', yaxis='y1', name=var.capitalize(),
-                                mode='lines', legendgroup=names[player], showlegend=True, visible='legendonly', line=dict(color=VAR_COLOURS[player][var], dash='dash', shape="linear"),
+                                mode='lines', legend="legend" if player == P1 else "legend2", showlegend=True, visible='legendonly', line=dict(color=VAR_COLOURS[player][var], dash='dash', shape="linear"),
                                 hovertemplate=names[player].capitalize() + ": %{y:.1f}%"))
+    #fig.update_layout(legend=dict(groupclick="togglegroup"))
     return fig
 
 def create_match_stats_graph(graph_type, match_stats_dff, stat_col_name, graph_title, player_root=True, is_percent=False):

@@ -46,12 +46,12 @@ hearts_default = [html.Img(src=app.get_asset_url(FULL_HEART), className="sub_hea
 default_spell_info = [
                         dbc.Row([
                             dbc.Col(id="p1_spell", className="p1", width=5),
-                            dbc.Label("Spells", className="bar_label"),
+                            dbc.Label(["Spells"], className="bar_label"),
                             dbc.Col(id="p2_spell", className="p2", width=5),
                         ], justify='center'),
                         dbc.Row([
                             dbc.Col([html.Div([])], id="p1_spell_percentile", className="p1", width=5),
-                            dbc.Label("Spell Percentile", className="bar_label"),
+                            dbc.Label("Percentile", className="bar_label"),
                             dbc.Col([html.Div([])], id="p2_spell_percentile", className="p2", width=5),
                         ], justify='center'),
                     ]
@@ -63,7 +63,7 @@ pred_graph_tab = dbc.Card(
             dbc.Col([
             dbc.Row([
                 dbc.Col([html.Div(hearts_default)], id="p1_round_count", className='p1', width=5),
-                dbc.Label("Round", className="bar_label"),
+                dbc.Label("Round", className="bar_label", style={'height': '100%'}),
                 dbc.Col([html.Div(hearts_default[::-1])], id="p2_round_count", className='p2', width=5),
             ], justify='center', style={"height": "15%"}),
             dbc.Row([
@@ -93,13 +93,13 @@ pred_graph_tab = dbc.Card(
             dbc.Row(default_spell_info, justify='center'),], style={"display": "none"}, id="spell_info"
         ),
         dbc.Row([
-            dbc.Label("Round Win Probability", style={'width': '25%'}, className="bar_label"),
+            dbc.Label("Round Win Probability", style={'width': '100%'}, className="bar_label"),
         ], justify='center'),
         dbc.Row([
             html.Div([html.Div([html.Div("50%"), html.Div("50%")], style={"--w": "50%"}, className="win_prob_bar bar_text")], id='round_win_prob_bar', className='bar_container'),
         ], justify='center'),
         dbc.Row([
-            dbc.Label("Set Win Probability", style={'width': '25%'}, className="bar_label"),
+            dbc.Label("Set Win Probability", style={'width': '100%'}, className="bar_label"),
         ], justify='center'),
             dbc.Row([
             html.Div([html.Div([html.Div("50%"), html.Div("50%")], style={"--w": "50%"}, className="win_prob_bar bar_text")], id='set_win_prob_bar', className='bar_container'),
