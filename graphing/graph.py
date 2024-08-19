@@ -290,20 +290,19 @@ def add_misc_graph_data(fig, dff, p1_player_name, p2_player_name):
             fig.add_trace(go.Scatter(x=dff[f'set_time'], y=y, xaxis='x', yaxis='y1', name=var.capitalize(),
                                 mode='lines', legend="legend" if player == P1 else "legend2", showlegend=True, visible='legendonly', line=dict(color=VAR_COLOURS[player][var], dash='dash', shape="linear"),
                                 hovertemplate=names[player].capitalize() + ": %{y:.1f}%"))
-        # with pd.option_context("future.no_silent_downcasting", True):
-        #     curr_dmg_start_times = dff[dff[f'{player}_curr_damaged'] & ~dff[f'{player}_curr_damaged'].shift().fillna(False).infer_objects(copy=False)]['set_time'].tolist()
-        #     curr_dmg_end_times = dff[~dff[f'{player}_curr_damaged'] & dff[f'{player}_curr_damaged'].shift().fillna(False).infer_objects(copy=False)]['set_time'].tolist()
-        # if len(curr_dmg_end_times) < len(curr_dmg_start_times):
-        #     curr_dmg_end_times.append(dff['set_time'].iat[-1])
-        # i=0
-        # while i < len(curr_dmg_start_times):
-        #     start_time = curr_dmg_start_times[i]
-        #     showlegend=True if i == 0 else False
-        #     while i+1 < len(curr_dmg_start_times) and (curr_dmg_start_times[i+1] - curr_dmg_end_times[i] < 0.2):
-        #         i+=1
-        #     fig.add_shape(type='rect', name='Damaged', x0=start_time, x1=curr_dmg_end_times[i], y0=0, y1=100, fillcolor=PLAYER_COLOURS(player), opacity=0.2, showlegend=showlegend, visible='legendonly', legendgrouptitle_text='dmg', legendgroup=f'Damaged', legend="legend" if player == P1 else "legend2")
-        #     i+=1
-    #fig.update_layout(legend=dict(groupclick="togglegroup"))
+        with pd.option_context("future.no_silent_downcasting", True):
+            curr_dmg_start_times = dff[dff[f'{player}_curr_damaged'] & ~dff[f'{player}_curr_damaged'].shift().fillna(False).infer_objects(copy=False)]['set_time'].tolist()
+            curr_dmg_end_times = dff[~dff[f'{player}_curr_damaged'] & dff[f'{player}_curr_damaged'].shift().fillna(False).infer_objects(copy=False)]['set_time'].tolist()
+        if len(curr_dmg_end_times) < len(curr_dmg_start_times):
+            curr_dmg_end_times.append(dff['set_time'].iat[-1])
+        i=0
+        while i < len(curr_dmg_start_times):
+            start_time = curr_dmg_start_times[i]
+            showlegend=True if i == 0 else False
+            while i+1 < len(curr_dmg_start_times) and (curr_dmg_start_times[i+1] - curr_dmg_end_times[i] < 0.2):
+                i+=1
+            fig.add_shape(type='rect', name='Damaged', x0=start_time, x1=curr_dmg_end_times[i], y0=0, y1=100, fillcolor=PLAYER_COLOURS(player), opacity=0.2, showlegend=showlegend, visible='legendonly', legendgrouptitle_text='dmg', legendgroup=f'Damaged', legend="legend" if player == P1 else "legend2")
+            i+=1
     return fig
 
 def create_match_stats_graph(graph_type, match_stats_dff, stat_col_name, graph_title, player_root=True, is_percent=False):
