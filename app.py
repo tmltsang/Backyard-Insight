@@ -53,12 +53,12 @@ hearts_default = [html.Img(src=app.get_asset_url(FULL_HEART), className="sub_hea
 default_spell_info = [
                         dbc.Row([
                             dbc.Col(id="p1_spell", className="p1", width=5),
-                            dbc.Label(["Spells"], className="bar_label"),
+                            html.Div(dbc.Label(["Spells"], className="bar_label"), className='bar_label_container'),
                             dbc.Col(id="p2_spell", className="p2", width=5),
                         ], justify='center'),
                         dbc.Row([
                             dbc.Col([html.Div([])], id="p1_spell_percentile", className="p1", width=5),
-                            dbc.Label("Percentile", className="bar_label"),
+                            html.Div(dbc.Label("Percentile", className="bar_label"), className='bar_label_container'),
                             dbc.Col([html.Div([])], id="p2_spell_percentile", className="p2", width=5),
                         ], justify='center'),
                     ]
@@ -70,27 +70,27 @@ pred_graph_tab = dbc.Card(
             dbc.Col([
             dbc.Row([
                 dbc.Col([html.Div(hearts_default)], id="p1_round_count", className='p1', width=5),
-                dbc.Label("Round", className="bar_label", style={'height': '100%'}),
+                html.Div(dbc.Label("Round", className="bar_label", style={'height': '100%'}), className='bar_label_container'),
                 dbc.Col([html.Div(hearts_default[::-1])], id="p2_round_count", className='p2', width=5),
             ], justify='center', style={"height": "15%"}),
             dbc.Row([
                 dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p1_health bar_text")], className='p1 bar_container')], id="p1_health_bar", className="p1", width=5),
-                dbc.Label("Health", className="bar_label"),
+                html.Div(dbc.Label("Health", className="bar_label"), className='bar_label_container'),
                 dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p2_health bar_text")], className='p2 bar_container')], id="p2_health_bar", className="p2", width=5),
             ], justify='center'),
             dbc.Row([
                 dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p1_burst bar_text")], className='p1 bar_container', style={"width": "33%"})], id="p1_burst_bar", className="p1", width=5),
-                dbc.Label("Burst", className="bar_label"),
+                html.Div(dbc.Label("Burst", className="bar_label"), className='bar_label_container'),
                 dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p2_burst bar_text")], className='p2 bar_container', style={"width": "33%"})], id="p2_burst_bar", className="p2", width=5),
             ], justify='center'),
             dbc.Row([
                 dbc.Col([html.Div([html.Div(["0%"], style={"--w": "0%"}, className="p1_tension bar_text")], className='p1 bar_container')], id="p1_tension_bar", className="p1", width=5),
-                dbc.Label("Tension", className="bar_label"),
+                html.Div(dbc.Label("Tension", className="bar_label"), className='bar_label_container'),
                 dbc.Col([html.Div([html.Div(["0%"], style={"--w": "0%"}, className="p2_tension bar_text")], className='p2 bar_container')], id="p2_tension_bar", className="p2", width=5),
             ], justify='center'),
             dbc.Row([
                 dbc.Col([html.Div([0], className='bar_label')], id="p1_counter", className="p1", width=5),
-                dbc.Label("Counter", className="bar_label"),
+                html.Div(dbc.Label("Counter", className="bar_label"), className='bar_label_container'),
                 dbc.Col([html.Div([0], className='bar_label')], id="p2_counter", className="p2", width=5),
             ], justify='center'),
             ], width=8),
@@ -100,13 +100,13 @@ pred_graph_tab = dbc.Card(
             dbc.Row(default_spell_info, justify='center'),], style={"display": "none"}, id="spell_info"
         ),
         dbc.Row([
-            dbc.Label("Round Win Probability", style={'width': '100%'}, className="bar_label"),
+             html.Div(dbc.Label("Round Win Probability",  className="bar_label"), className='bar_label_container', style={'width': '100%'},),
         ], justify='center'),
         dbc.Row([
             html.Div([html.Div([html.Div("50%"), html.Div("50%")], style={"--w": "50%"}, className="win_prob_bar bar_text")], id='round_win_prob_bar', className='bar_container'),
         ], justify='center'),
         dbc.Row([
-            dbc.Label("Match Win Probability", style={'width': '100%'}, className="bar_label"),
+             html.Div(dbc.Label("Match Win Probability", className="bar_label"), className='bar_label_container', style={'width': '100%'},),
         ], justify='center'),
             dbc.Row([
             html.Div([html.Div([html.Div("50%"), html.Div("50%")], style={"--w": "50%"}, className="win_prob_bar bar_text")], id='set_win_prob_bar', className='bar_container'),
@@ -130,7 +130,10 @@ match_stats = dbc.Card(
 
 app.layout = dbc.Container(
     [
-        html.H1(children=html.Img(src='https://dustloop.com/wiki/images/5/55/GGST_Logo.png', style={'display':'block', 'width':'25%', 'height':'auto'}), style={'display': 'flex', 'justify-content': 'center'} ,className="dbc"),
+        #html.H1(children=html.Img(src='https://dustloop.com/wiki/images/5/55/GGST_Logo.png', style={'display':'block', 'width':'25%', 'height':'auto'}), style={'display': 'flex', 'justify-content': 'center'} ,className="dbc"),
+        #html.H1( "Backyard Insight", style={'font-family': 'strive', 'font-size': '4rem', 'background-color': '#cc0000', "padding": "2rem 1rem",}, className="text-white text-center dbc"),
+        html.H1( "Backyard Insight", style={'font-family': 'strive'}, className="title text-white text-center dbc"),
+
         dbc.Row([
             dbc.Col([
                 controls,
