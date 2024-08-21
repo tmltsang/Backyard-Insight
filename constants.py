@@ -27,9 +27,9 @@ VAR_COLOURS = {
 }
 
 STAT_TITLE = {'burst_count': 'Psych Burst Count',
-         'burst_use': 'Burst Bar Used',
-         'tension_use': 'Tension Used',
-         'first_hit': 'First Hit',
+         'burst_use': 'Burst Bars Used',
+         'tension_use': 'Tension Bars Used',
+         'first_hit': 'First Hits',
          'round_lead': 'Round Probability Lead',
          'set_lead': 'Set Probability Lead',}
 
@@ -92,3 +92,5 @@ DEFAULT_BARS = {
     'round_win_prob': no_update,
     'set_win_prob': no_update
 }
+
+MAX_PLAYER_NAME_LEN = 13

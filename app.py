@@ -16,8 +16,8 @@ df.sort_index(level=full_index, inplace=True)
 hover_df=df.reset_index().set_index(['tournament', 'tournament_round', 'set_index', 'set_time']).sort_index()
 df_match_stats.set_index(full_index, inplace=True)
 df_match_stats.sort_index(level=full_index, inplace=True)
-df_asuka_stats.set_index(['tournament', 'tournament_round', 'set_index', 'player_side'], inplace=True)
-df_asuka_stats.sort_index(level=['tournament', 'tournament_round', 'set_index', 'player_side'], inplace=True)
+df_asuka_stats.set_index(['tournament', 'tournament_round', 'set_index', 'player_side', 'round_index'], inplace=True)
+df_asuka_stats.sort_index(level=['tournament', 'tournament_round', 'set_index', 'player_side', 'round_index'], inplace=True)
 
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 w3schools = 'https://www.w3schools.com/w3css/4/w3.css'
@@ -30,9 +30,9 @@ server = app.server
 
 dropdowns = html.Div([
     dbc.Label("Tournament"),
-    dcc.Dropdown([{'label': tournament.replace('_', ' ').title(), 'value': tournament} for tournament in df.index.unique(level='tournament')], 'evo', clearable=False, id='tournament-selection', className="dbc"),
+    dcc.Dropdown([{'label': tournament.replace('_', ' ').title(), 'value': tournament} for tournament in df.index.unique(level='tournament')], 'evo', clearable=False, id='tournament-selection', className="dbc",),
     dbc.Label("Tournament Round"),
-    dcc.Dropdown(clearable=False, id='tr-selection', className="dbc"),
+    dcc.Dropdown(clearable=False, id='tr-selection', className="dbc", optionHeight=40),
     dbc.Label("Match number"),
     dcc.Dropdown(id='set-selection', clearable=False, className="dbc"),
 ])
@@ -99,7 +99,7 @@ pred_graph_tab = dbc.Card(
             html.Div([html.Div([html.Div("50%"), html.Div("50%")], style={"--w": "50%"}, className="win_prob_bar bar_text")], id='round_win_prob_bar', className='bar_container'),
         ], justify='center'),
         dbc.Row([
-            dbc.Label("Set Win Probability", style={'width': '100%'}, className="bar_label"),
+            dbc.Label("Match Win Probability", style={'width': '100%'}, className="bar_label"),
         ], justify='center'),
             dbc.Row([
             html.Div([html.Div([html.Div("50%"), html.Div("50%")], style={"--w": "50%"}, className="win_prob_bar bar_text")], id='set_win_prob_bar', className='bar_container'),
@@ -216,9 +216,6 @@ def update_graph(tr, set_num, active_tab, tournament):
             active_tab = 'pred_tab'
 
     fig = graph.add_misc_graph_data(fig, dff,  p1_player_name, p2_player_name,)
-
-    # match_stats_style = {'height': '90vh', 'visibility': 'visible'}
-    # match_stats_fig = create_match_stats_fig(match_stats_dff, stat_selection, stat_label)
 
     p1_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p1_char_name}.png'), className="player_portrait"), html.Div([p1_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS(P1)})]
     p2_player_name_div = [html.Img(src=app.get_asset_url(f'images/portraits/{p2_char_name}.png'), className="player_portrait"), html.Div([p2_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS(P2)})]
