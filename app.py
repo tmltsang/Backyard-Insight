@@ -1,3 +1,4 @@
+import argparse
 from dash import Dash, html, dcc, no_update, Output, Input, State
 import dash_bootstrap_components as dbc
 from graphing import graph
@@ -5,7 +6,13 @@ from database.gg_data_client import GGDataClient
 from constants import *
 import copy
 
-data_client = GGDataClient()
+parser = argparse.ArgumentParser()
+parser.add_argument('-l', '--local', default=False, action=argparse.BooleanOptionalAction)
+parser.add_argument('-d', '--debug', default=False, action=argparse.BooleanOptionalAction)
+
+args = parser.parse_args()
+
+data_client = GGDataClient(local=args.local)
 df = data_client.get_all_matches()
 df_match_stats = data_client.get_all_match_stats()
 df_asuka_stats = data_client.get_all_asuka_data()
@@ -337,4 +344,7 @@ def display_asuka_spell_data(spell_data, default_value=no_update):
     return spells
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=8080)
+    if args.local:
+        app.run(debug=args.debug)
+    else:
+        app.run(debug=args.debug, host="0.0.0.0", port=8080)
