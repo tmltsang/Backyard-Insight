@@ -6,12 +6,23 @@ from database.gg_data_client import GGDataClient
 from constants import *
 import copy
 
+#### Set-Up for local dev ####
 parser = argparse.ArgumentParser()
-parser.add_argument('-l', '--local', default=False, action=argparse.BooleanOptionalAction)
-parser.add_argument('-d', '--debug', default=False, action=argparse.BooleanOptionalAction)
+parser.add_argument('-l', '--local', default=False, required=False, action=argparse.BooleanOptionalAction)
+parser.add_argument('-d', '--debug', default=False, required=False, action=argparse.BooleanOptionalAction)
 
-args = parser.parse_args()
+args, _ = parser.parse_known_args()
 
+#### Start dash app with correct stylesheets ####
+dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
+w3schools = 'https://www.w3schools.com/w3css/4/w3.css'
+external_stylesheets = [dbc.themes.JOURNAL, dbc_css, w3schools]
+
+app = Dash(__name__, suppress_callback_exceptions = True, external_stylesheets=external_stylesheets)
+app.title = 'Backyard - Insight'
+server = app.server
+
+#### Load all the data ####
 data_client = GGDataClient(local=args.local)
 df = data_client.get_all_matches()
 df_match_stats = data_client.get_all_match_stats()
@@ -26,15 +37,7 @@ df_match_stats.sort_index(level=full_index, inplace=True)
 df_asuka_stats.set_index(['tournament', 'tournament_round', 'set_index', 'player_side', 'round_index'], inplace=True)
 df_asuka_stats.sort_index(level=['tournament', 'tournament_round', 'set_index', 'player_side', 'round_index'], inplace=True)
 
-dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
-w3schools = 'https://www.w3schools.com/w3css/4/w3.css'
-external_stylesheets = [dbc.themes.JOURNAL, dbc_css, w3schools]
-
-app = Dash(__name__, suppress_callback_exceptions = True, external_stylesheets=external_stylesheets)
-app.title = 'GG Strive Tournament Stats'
-server = app.server
-
-
+#### Defining Layout ####
 dropdowns = html.Div([
     dbc.Label("Tournament"),
     dcc.Dropdown([{'label': tournament.replace('_', ' ').title(), 'value': tournament} for tournament in df.index.unique(level='tournament')], 'evo', clearable=False, id='tournament-selection', className="dbc",),
@@ -151,6 +154,8 @@ app.layout = dbc.Container(
     className="dbc"
 )
 
+#### Callbacks ####
+## Populating Dropdowns ##
 @app.callback(
     Output('tr-selection', 'options'),
     [Input('tournament-selection', 'value')]
@@ -164,7 +169,6 @@ def update_tr_dropdown(tournament):
 )
 def set_initial_tr_value(options):
     return options[0]['value']
-
 
 @app.callback(
     Output('set-selection', 'options'),
@@ -181,6 +185,7 @@ def update_match_dropdown(tr, tournament):
 def set_initial_set_value(options):
     return options[0]['value']
 
+## Creating graphs ##
 @app.callback(
     [Output('match_stats_graph', 'figure'),
     Output('match_stats_graph', 'style')],
@@ -242,6 +247,7 @@ def create_match_stats_fig(match_stats_dff, graph_type, stat_selection, stat_lab
             fig = graph.create_match_stats_graph(graph_type, match_stats_dff, stat_selection, stat_label)
     return fig
 
+## Retrieving and displaying hoverdata  ##
 @app.callback(
     Output('p1_round_count', 'children'),
     Output('p2_round_count', 'children'),
@@ -324,6 +330,7 @@ def display_hover_data(hoverData, tournament, tr, set_num):
             spells[P1]['percentile'], spells[P2]['percentile'],\
             bars['round_win_prob'], bars['set_win_prob']
 
+## Asuka spell hoverdata ##
 def display_asuka_spell_data(spell_data, default_value=no_update):
     spells = {}
     spells[P1] = {}
@@ -346,6 +353,7 @@ def display_asuka_spell_data(spell_data, default_value=no_update):
 
     return spells
 
+### Starting the app ###
 if __name__ == '__main__':
     if args.local:
         app.run(debug=args.debug)

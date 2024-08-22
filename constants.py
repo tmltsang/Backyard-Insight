@@ -4,9 +4,6 @@ import plotly.express as px
 P1 = 'p1'
 P2 = 'p2'
 
-# PLAYER_COLOURS = {'p1': 'rgb(239, 85, 59)',
-#                   'p2': 'rgb(99, 110, 250)'}
-
 def PLAYER_COLOURS(player, opacity=0.8):
     if player == P1:
         return f'rgba(239, 85, 59, {opacity})'
@@ -34,8 +31,6 @@ STAT_TITLE = {'burst_count': 'Psych Burst Count',
          'set_lead': 'Set Probability Lead',}
 
 STAT_OPTIONS = [{'label': title, 'value': value}for value, title in STAT_TITLE.items()]
-
-
 
 WIN_PATTERN = ""
 LOSS_PATTERN = "/"
