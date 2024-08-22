@@ -100,7 +100,7 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
         fig.add_vline(x=p1_round_win_time, line_width=2, layer='below', line_color=PLAYER_COLOURS(P1), annotation_text=f'{p1_player_name.upper()} wins', annotation_position="top right", col='all')
 
     fig.update_xaxes(showticklabels=False, range=[0, final_set_time+5], automargin=True, showgrid=False)
-    fig.update_yaxes(range=[0, 100],automargin=True)
+    fig.update_yaxes(range=[0, 100], automargin=True)
     fig.update_layout(legend=dict(groupclick="togglegroup"))
 
     return fig

@@ -215,3 +215,12 @@ def display_asuka_spell_data(spell_data, default_value=no_update):
         spells[player_side]['percentile'] = [dbc.Label(f"{player_data['percentile']}%", className='spell_label')]
 
     return spells
+
+@dash.callback(
+    Output("about-modal", "is_open"),
+    Input("about-navlink", "n_clicks"),
+    State("about-modal", "is_open"),
+)
+def display_function_about_information(n_clicks, is_open):
+    if n_clicks:
+        return not is_open

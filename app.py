@@ -20,6 +20,8 @@ server = app.server
 
 navbar = dbc.NavbarSimple(
     children=[
+        dbc.NavItem(dbc.NavLink("About", href='#', id="about-navlink", n_clicks=0)),
+        dbc.Modal([dbc.ModalHeader(dbc.ModalTitle("About"))], id="about-modal"),
         dbc.NavItem(dbc.NavLink(html.I(className="fa-brands fa-github"), href="https://github.com/tmltsang/ggstrive_tournament_dashboard")),
     ],
     brand="Backyard Insight",
@@ -29,10 +31,18 @@ navbar = dbc.NavbarSimple(
     color="#cc0000",
     dark=True,
 )
+footer = html.Footer([
+    "Backyard Insight is not endorsed by © ARC SYSTEM WORKS or any tournaments shown. "+
+    "It is an unofficial statistics website made without input from anyone officially involved in © ARC SYSTEM WORKS, Arcsys World Tour or any other tournaments. "+
+    "More info on Guilty Gear -Strive- can be found at ",
+    html.A("https://www.guiltygear.com/ggst/en/", href="https://www.guiltygear.com/ggst/en/")
+], className='footer')
 
 app.layout = dbc.Container(
     [   navbar,
-        page_container
+        page_container,
+        html.Hr(),
+        footer
     ],
     fluid=True,
     style={'padding': 0},
