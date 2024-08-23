@@ -1,14 +1,8 @@
-import argparse
-import pages.callbacks
 from dash import Dash, html, page_container
 import dash_bootstrap_components as dbc
+import config
+import constants
 
-#### Set-Up for local dev ####
-parser = argparse.ArgumentParser()
-parser.add_argument('-l', '--local', default=False, required=False, action=argparse.BooleanOptionalAction)
-parser.add_argument('-d', '--debug', default=False, required=False, action=argparse.BooleanOptionalAction)
-
-args, _ = parser.parse_known_args()
 #### Start dash app with correct stylesheets ####
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 w3schools = 'https://www.w3schools.com/w3css/4/w3.css'
@@ -48,10 +42,11 @@ app.layout = dbc.Container(
     style={'padding': 0},
     className="dbc"
 )
+import pages.callbacks
 
 ### Starting the app ###
 if __name__ == '__main__':
-    if args.local:
-        app.run(debug=args.debug)
+    if config.get(constants.LOCAL_KEY, is_bool=True):
+        app.run(debug=config.get(constants.DEBUG_KEY, is_bool=True))
     else:
-        app.run(debug=args.debug, host="0.0.0.0", port=8080)
+        app.run(debug=config.get(constants.DEBUG_KEY, is_bool=True), host="0.0.0.0", port=8080)

@@ -9,12 +9,11 @@ from graphing import graph
 from constants import *
 from pages.dashboard import default_spell_info, hearts_default
 import copy
-from app import args
 
 #### Load all the data ####
-df = gg_data_client.get_all_matches(local=args.local)
-df_match_stats = gg_data_client.get_all_match_stats(local=args.local)
-df_asuka_stats = gg_data_client.get_all_asuka_data(local=args.local)
+df = gg_data_client.get_all_matches()
+df_match_stats = gg_data_client.get_all_match_stats()
+df_asuka_stats = gg_data_client.get_all_asuka_data()
 hover_df=df.reset_index().set_index(['tournament', 'tournament_round', 'set_index', 'set_time']).sort_index()
 
 #### Callbacks ####

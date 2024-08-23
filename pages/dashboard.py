@@ -1,4 +1,3 @@
-from app import args
 from constants import *
 import dash
 from dash import html, dcc
