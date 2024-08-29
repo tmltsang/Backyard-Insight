@@ -139,17 +139,17 @@ def display_hover_data(hoverData, tournament, tr, set_num):
     x = None
     if hoverData != None:
         x = hoverData['points'][0]['x']
-        dff = df.loc[(tournament, tr, set_num)]
-        curr_state = dff[dff['set_time'] == x]
+        curr_state = hover_df.loc[(tournament, tr, set_num, x)]
+        print(type(curr_state))
         for player in [P1, P2]:
             if(len(curr_state) != 0):
                 data_dict[player] = {}
                 for value in ['health', 'tension', 'burst', 'counter', 'curr_damaged', 'round_count']:
-                    data_dict[player][value] = curr_state[f'{player}_{value}'].iat[0]
+                    data_dict[player][value] = curr_state[f'{player}_{value}']
                 if player == P1:
-                    p1_round_win_prob =  round(curr_state[f'smooth_round_pred'].iat[0] * 100, 1)
+                    p1_round_win_prob =  round(curr_state[f'smooth_round_pred'] * 100, 1)
                     bars['round_win_prob'] = html.Div([html.Div(f'{p1_round_win_prob}%'), html.Div(f'{round(100 - p1_round_win_prob, 1)}%')], style={"--w": f'{p1_round_win_prob}%'}, className="win_prob_bar bar_text")
-                    p1_set_win_prob =  round(curr_state[f'smooth_set_pred'].iat[0] * 100, 1)
+                    p1_set_win_prob =  round(curr_state[f'smooth_set_pred'] * 100, 1)
                     bars['set_win_prob'] = html.Div([html.Div(f'{p1_set_win_prob}%'), html.Div(f'{round(100 - p1_set_win_prob, 1)}%')], style={"--w": f'{p1_set_win_prob}%'}, className="win_prob_bar bar_text")
 
             if df_asuka_stats.index.isin([(tournament, tr, set_num, player)]).any():
