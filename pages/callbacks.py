@@ -140,7 +140,6 @@ def display_hover_data(hoverData, tournament, tr, set_num):
     if hoverData != None:
         x = hoverData['points'][0]['x']
         curr_state = hover_df.loc[(tournament, tr, set_num, x)]
-        print(type(curr_state))
         for player in [P1, P2]:
             if(len(curr_state) != 0):
                 data_dict[player] = {}
