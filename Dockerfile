@@ -9,4 +9,4 @@ RUN pip install gunicorn
 COPY . ./
 COPY ./assets/fonts/ .font/
 #Running your APP and doing some PORT Forwarding
-CMD gunicorn -b 0.0.0.0:8080 app:server
+CMD gunicorn -b 0.0.0.0:10000 app:server

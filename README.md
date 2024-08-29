@@ -1,4 +1,5 @@
 # Backyard Insight
+![demo](docs/images/demo.gif)
 The dashboard for the metrics created by [Backyard-Observer](https://github.com/tmltsang/Backyard-Observer) for game Guilty Gear -Strive-, hosted on [backyard-insight.info]()
 
 For more information about the project, read [about.md](assets/text/about.md)
@@ -15,9 +16,8 @@ source venv/bin/activate
 python -r requirements.txt
 
 ### Conda
-conda create --name backyard-insight
+conda create --name backyard-insight --file conda-requirements.txt
 conda activate backyard-insight
-conda install --yes --file conda-requirements.txt
 ```
 
 ### .env
@@ -57,7 +57,7 @@ Add `IS_DOCKER=true` to `.env`
 docker build -t backyard-insight .
 
 #Deploy
-docker run --rm -v "/${PWD}/.env:/root/.env"  -p 4500:8080 --name backyard-insight backyard-insight
+docker run --rm -v "/${PWD}/.env:/root/.env"  -p 4500:10000 --name backyard-insight backyard-insight
 ```
 The service can be accessed via `localhost:4500`
 
