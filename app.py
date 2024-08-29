@@ -46,7 +46,7 @@ import pages.callbacks
 
 ### Starting the app ###
 if __name__ == '__main__':
-    if config.get(constants.LOCAL_KEY, is_bool=True):
-        app.run(debug=config.get(constants.DEBUG_KEY, is_bool=True))
-    else:
+    if config.get(constants.IS_DOCKER_KEY, is_bool=True):
         app.run(debug=config.get(constants.DEBUG_KEY, is_bool=True), host="0.0.0.0", port=8080)
+    else:
+        app.run(debug=config.get(constants.DEBUG_KEY, is_bool=True))
