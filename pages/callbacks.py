@@ -111,28 +111,22 @@ def create_match_stats_fig(match_stats_dff, graph_type, stat_selection, stat_lab
 
 ## Retrieving and displaying hoverdata  ##
 @dash.callback(
-    Output('p1_round_count', 'children'),
-    Output('p2_round_count', 'children'),
-    Output('p1_health_bar', 'style'),
-    Output('p2_health_bar', 'style'),
-    Output('p1_burst_bar', 'style'),
-    Output('p2_burst_bar', 'style'),
-    Output('p1_tension_bar', 'style'),
-    Output('p2_tension_bar', 'style'),
+    # Output('p1_round_count', 'children'),
+    # Output('p2_round_count', 'children'),
     Output('p1_health_bar', 'children'),
     Output('p2_health_bar', 'children'),
-    Output('p1_burst_bar', 'children'),
-    Output('p2_burst_bar', 'children'),
-    Output('p1_tension_bar', 'children'),
-    Output('p2_tension_bar', 'children'),
-    Output('p1_counter', 'children'),
-    Output('p2_counter', 'children'),
-    Output('p1_spell', 'children'),
-    Output('p2_spell', 'children'),
-    Output('p1_spell_percentile', 'children'),
-    Output('p2_spell_percentile', 'children'),
-    Output('round_win_prob_bar', 'children'),
-    Output('set_win_prob_bar', 'children'),
+    # Output('p1_burst_bar', 'children'),
+    # Output('p2_burst_bar', 'children'),
+    # Output('p1_tension_bar', 'children'),
+    # Output('p2_tension_bar', 'children'),
+    # Output('p1_counter', 'children'),
+    # Output('p2_counter', 'children'),
+    # Output('p1_spell', 'children'),
+    # Output('p2_spell', 'children'),
+    # Output('p1_spell_percentile', 'children'),
+    # Output('p2_spell_percentile', 'children'),
+    # Output('round_win_prob_bar', 'children'),
+    # Output('set_win_prob_bar', 'children'),
     Input('pred_graph', 'hoverData'),
     State('tournament-selection', 'value'),
     State('tr-selection', 'value'),
@@ -180,9 +174,7 @@ def display_hover_data(hoverData, tournament, tr, set_num):
                 background_style = {"--cd_w": f'{value+10}%'}
             elif bar == "burst":
                 background_style = {"width": "40%"}
-            #bars[player_side][bar] = html.Div([html.Div([f"{value}%"], style={"--w": f"{value}%"}, className=bar_class_name)], className=background_class_name, style=background_style)
-            bars[player_side][bar] = {"--w": f"{value}%"}
-            bars[player_side][f'{bar}_label'] = f"{value}%"
+            bars[player_side][bar] = html.Div([html.Div([f"{value}%"], style={"--w": f"{value}%"}, className=bar_class_name)], className=background_class_name, style=background_style)
         bars[player_side]["counter"] = html.Div([data["counter"]], className=f"bar_label {player_side}", style={"font-size": "30px"})
         curr_hearts = copy.deepcopy(hearts_default)
         for i in range(data['round_count']):
@@ -190,17 +182,15 @@ def display_hover_data(hoverData, tournament, tr, set_num):
         heart_side = "p1" if player_side == P2 else "p2"
         curr_hearts = curr_hearts if heart_side == P1 else curr_hearts[::-1]
         bars[heart_side]["round_count"] = html.Div(curr_hearts)
-    return bars[P1]["round_count"], bars[P2]["round_count"],\
-            bars[P1]["health"], bars[P2]["health"],\
-            bars[P1]["burst"], bars[P2]["burst"],\
-            bars[P1]["tension"], bars[P2]["tension"],\
-            bars[P1]["health_label"], bars[P2]["health_label"],\
-            bars[P1]["burst_label"], bars[P2]["burst_label"],\
-            bars[P1]["tension_label"], bars[P2]["tension_label"],\
-            bars[P1]["counter"], bars[P2]["counter"],\
-            spells[P1]['spell'], spells[P2]['spell'],\
-            spells[P1]['percentile'], spells[P2]['percentile'],\
-            bars['round_win_prob'], bars['set_win_prob']
+    return bars[P1]["health"], bars[P2]["health"]
+    # return bars[P1]["round_count"], bars[P2]["round_count"],\
+    #         bars[P1]["health"], bars[P2]["health"],\
+    #         bars[P1]["burst"], bars[P2]["burst"],\
+    #         bars[P1]["tension"], bars[P2]["tension"],\
+    #         bars[P1]["counter"], bars[P2]["counter"],\
+    #         spells[P1]['spell'], spells[P2]['spell'],\
+    #         spells[P1]['percentile'], spells[P2]['percentile'],\
+    #         bars['round_win_prob'], bars['set_win_prob']
 
 ## Asuka spell hoverdata ##
 def display_asuka_spell_data(spell_data, default_value=no_update):
