@@ -113,6 +113,12 @@ def create_match_stats_fig(match_stats_dff, graph_type, stat_selection, stat_lab
 @dash.callback(
     Output('p1_round_count', 'children'),
     Output('p2_round_count', 'children'),
+    Output('p1_health_bar', 'style'),
+    Output('p2_health_bar', 'style'),
+    Output('p1_burst_bar', 'style'),
+    Output('p2_burst_bar', 'style'),
+    Output('p1_tension_bar', 'style'),
+    Output('p2_tension_bar', 'style'),
     Output('p1_health_bar', 'children'),
     Output('p2_health_bar', 'children'),
     Output('p1_burst_bar', 'children'),
@@ -174,7 +180,9 @@ def display_hover_data(hoverData, tournament, tr, set_num):
                 background_style = {"--cd_w": f'{value+10}%'}
             elif bar == "burst":
                 background_style = {"width": "40%"}
-            bars[player_side][bar] = html.Div([html.Div([f"{value}%"], style={"--w": f"{value}%"}, className=bar_class_name)], className=background_class_name, style=background_style)
+            #bars[player_side][bar] = html.Div([html.Div([f"{value}%"], style={"--w": f"{value}%"}, className=bar_class_name)], className=background_class_name, style=background_style)
+            bars[player_side][bar] = {"--w": f"{value}%"}
+            bars[player_side][f'{bar}_label'] = f"{value}%"
         bars[player_side]["counter"] = html.Div([data["counter"]], className=f"bar_label {player_side}", style={"font-size": "30px"})
         curr_hearts = copy.deepcopy(hearts_default)
         for i in range(data['round_count']):
@@ -186,6 +194,9 @@ def display_hover_data(hoverData, tournament, tr, set_num):
             bars[P1]["health"], bars[P2]["health"],\
             bars[P1]["burst"], bars[P2]["burst"],\
             bars[P1]["tension"], bars[P2]["tension"],\
+            bars[P1]["health_label"], bars[P2]["health_label"],\
+            bars[P1]["burst_label"], bars[P2]["burst_label"],\
+            bars[P1]["tension_label"], bars[P2]["tension_label"],\
             bars[P1]["counter"], bars[P2]["counter"],\
             spells[P1]['spell'], spells[P2]['spell'],\
             spells[P1]['percentile'], spells[P2]['percentile'],\
