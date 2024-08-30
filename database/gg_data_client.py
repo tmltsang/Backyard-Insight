@@ -45,7 +45,8 @@ def get_all_asuka_data():
             client = AtlasClient(config.get(constants.ATLAS_URI_KEY), config.get(constants.DB_NAME_KEY))
             df_asuka_stats = pd.DataFrame(client.find(config.get(constants.COLLECTION_ASUKA_MATCH_STATS_KEYS)))
             del df_asuka_stats['_id']
-        asuka_index = ['tournament', 'tournament_round', 'set_index', 'player_side', 'round_index']
+        asuka_index = ['tournament', 'tournament_round', 'set_index', 'player_side', 'set_time']
         df_asuka_stats.set_index(asuka_index, inplace=True)
         df_asuka_stats.sort_index(level=asuka_index, inplace=True)
+        df_asuka_stats = df_asuka_stats[~df_asuka_stats.index.duplicated()]
     return df_asuka_stats

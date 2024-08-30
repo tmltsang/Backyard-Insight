@@ -289,7 +289,7 @@ def create_asuka_graph(fig, asuka_stats_dff, p1_player_name, p2_player_name):
     names = {P1: p1_player_name,
              P2: p2_player_name}
     for player in asuka_stats_dff.index.unique(level='player_side'):
-        player_dff = asuka_stats_dff.loc[player]
+        player_dff = asuka_stats_dff.loc[player].reset_index().set_index(['round_index'])
         for round_index in player_dff.index.unique(level='round_index'):
             fig.add_trace(go.Scatter(x=player_dff.loc[round_index, 'set_time'], y=player_dff.loc[round_index, 'spell_percentile_svc'], xaxis='x', yaxis='y1', name='Spell Percentile',
                                 mode='lines', legend="legend" if player == P1 else "legend2", legendgroup=f'{player}_spell_percentile', showlegend=True if round_index==0 else False, visible='legendonly', line=dict(color=PLAYER_COLOURS(player), dash='dash', shape="linear"),

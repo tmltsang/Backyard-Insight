@@ -9,6 +9,7 @@ from graphing import graph
 from constants import *
 from pages.dashboard import default_spell_info, hearts_default
 import copy
+import pandas as pd
 
 #### Load all the data ####
 df = gg_data_client.get_all_matches()
@@ -67,7 +68,9 @@ def display_match_stats(stat_selection, graph_type, tr, set_num, tournament):
     Output('pred_graph', 'figure'),
     Output('pred_graph', 'style'),
     Output('spell_info', 'style'),
-    Output('spell_info', 'children'),],
+    Output('spell_info', 'children'),
+    Output('curr_match_df', 'data'),
+    Output('curr_asuka_stats_df', 'data'),],
     [Input('tr-selection', 'value'),
     Input('set-selection', 'value'),],
     [State('tabs', 'active_tab'),
@@ -75,7 +78,8 @@ def display_match_stats(stat_selection, graph_type, tr, set_num, tournament):
 )
 def update_graph(tr, set_num, active_tab, tournament):
     dff = df.loc[(tournament, tr, set_num)]
-    asuka_stats_dff = None
+    asuka_stats_dff = pd.DataFrame()
+    asuka_stats_dict = {}
     spell_info_style = {'display': 'none'}
     p1_player_name = dff['p1_player_name'].iat[0]
     p2_player_name = dff['p2_player_name'].iat[0]
@@ -88,6 +92,10 @@ def update_graph(tr, set_num, active_tab, tournament):
         asuka_stats_dff = df_asuka_stats.loc[(tournament, tr, set_num)]
         spell_info_style = {}
         fig = graph.create_asuka_graph(fig, asuka_stats_dff, p1_player_name, p2_player_name)
+        for player in [P1, P2]:
+            if asuka_stats_dff.index.isin([(player)], level='player_side').any():
+                asuka_stats_dff = asuka_stats_dff[~asuka_stats_dff.index.duplicated()]
+                asuka_stats_dict[player] = asuka_stats_dff.loc[player].to_dict('index')
     else:
         if active_tab == 'asuka_tab':
             active_tab = 'pred_tab'
@@ -96,9 +104,8 @@ def update_graph(tr, set_num, active_tab, tournament):
 
     p1_player_name_div = [html.Img(src=dash.get_asset_url(f'images/portraits/{p1_char_name}.png'), className="player_portrait"), html.Div([p1_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS(P1)})]
     p2_player_name_div = [html.Img(src=dash.get_asset_url(f'images/portraits/{p2_char_name}.png'), className="player_portrait"), html.Div([p2_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS(P2)})]
-
     return p1_player_name_div, p2_player_name_div, fig,  {'height': '55vh', 'visibility': 'visible'},\
-            spell_info_style, default_spell_info
+            spell_info_style, default_spell_info, hover_df.loc[(tournament, tr, set_num)].to_dict('index'), asuka_stats_dict
 
 def create_match_stats_fig(match_stats_dff, graph_type, stat_selection, stat_label):
     fig = graph.placeholder_graph()
@@ -128,20 +135,19 @@ def create_match_stats_fig(match_stats_dff, graph_type, stat_selection, stat_lab
     Output('round_win_prob_bar', 'children'),
     Output('set_win_prob_bar', 'children'),
     Input('pred_graph', 'hoverData'),
-    State('tournament-selection', 'value'),
-    State('tr-selection', 'value'),
-    State('set-selection', 'value'),
+    State('curr_match_df', 'data'),
+    State('curr_asuka_stats_df', 'data')
 )
-def display_hover_data(hoverData, tournament, tr, set_num):
+def display_hover_data(hoverData, curr_match_df, curr_asuka_stats_df):
     bars = DEFAULT_BARS
     data_dict = {}
     spell_data = {}
     x = None
     if hoverData != None:
-        x = hoverData['points'][0]['x']
-        curr_state = hover_df.loc[(tournament, tr, set_num, x)]
+        x = str(hoverData['points'][0]['x'])
+        curr_state = curr_match_df[x] if x in curr_match_df else None
         for player in [P1, P2]:
-            if(len(curr_state) != 0):
+            if(curr_state):
                 data_dict[player] = {}
                 for value in ['health', 'tension', 'burst', 'counter', 'curr_damaged', 'round_count']:
                     data_dict[player][value] = curr_state[f'{player}_{value}']
@@ -150,14 +156,13 @@ def display_hover_data(hoverData, tournament, tr, set_num):
                     bars['round_win_prob'] = html.Div([html.Div(f'{p1_round_win_prob}%'), html.Div(f'{round(100 - p1_round_win_prob, 1)}%')], style={"--w": f'{p1_round_win_prob}%'}, className="win_prob_bar bar_text")
                     p1_set_win_prob =  round(curr_state[f'smooth_set_pred'] * 100, 1)
                     bars['set_win_prob'] = html.Div([html.Div(f'{p1_set_win_prob}%'), html.Div(f'{round(100 - p1_set_win_prob, 1)}%')], style={"--w": f'{p1_set_win_prob}%'}, className="win_prob_bar bar_text")
-
-            if df_asuka_stats.index.isin([(tournament, tr, set_num, player)]).any():
-                asuka_stats_dff = df_asuka_stats.loc[(tournament, tr, set_num, player)]
-                curr_asuka_state = asuka_stats_dff[asuka_stats_dff["set_time"] == x]
-                if len(curr_asuka_state) > 0:
-                    spell_data[player] = {}
-                    spell_data[player]['spells'] = [curr_asuka_state[f'asuka_spell_{num}'].iat[0] for num in list(range(1,5))]
-                    spell_data[player]['percentile'] = curr_asuka_state['spell_percentile_mlp'].iat[0]
+            if curr_asuka_stats_df:
+                if player in curr_asuka_stats_df:
+                    curr_asuka_state = curr_asuka_stats_df[player][x] if x in curr_asuka_stats_df[player] else {}
+                    if curr_asuka_state:
+                        spell_data[player] = {}
+                        spell_data[player]['spells'] = [curr_asuka_state[f'asuka_spell_{num}'] for num in list(range(1,5))]
+                        spell_data[player]['percentile'] = curr_asuka_state['spell_percentile_mlp']
         spells = display_asuka_spell_data(spell_data, default_value=no_update)
     else:
         data_dict = DEFAULT_PRED_HD

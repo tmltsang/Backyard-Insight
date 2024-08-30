@@ -87,6 +87,8 @@ pred_graph_tab = dbc.Card(
         ], justify='center'),
         dbc.Row([
             graphs,
+            dcc.Store(id='curr_match_df'),
+            dcc.Store(id='curr_asuka_stats_df'),
         ])
     ])
 )
