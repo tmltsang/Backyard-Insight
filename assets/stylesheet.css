@@ -151,18 +151,19 @@
 
 .main_heart{
     width: auto;
-    height: 50%;
+    height: 100%;
     max-width: 100%;
 }
 
 .sub_heart {
     width: auto;
-    height: 35%;
+    height: 70%;
     max-width: 100%;
 }
 
 .heart_container {
-    height:25%
+    height:90%;
+    align-items: center;
 }
 
 .player_name_container {

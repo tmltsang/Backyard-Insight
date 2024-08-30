@@ -7,7 +7,7 @@ import database.gg_data_client as gg_data_client
 
 from graphing import graph
 from constants import *
-from pages.dashboard import default_spell_info, hearts_default
+from pages.dashboard import default_spell_info
 import copy
 import pandas as pd
 
@@ -117,86 +117,86 @@ def create_match_stats_fig(match_stats_dff, graph_type, stat_selection, stat_lab
     return fig
 
 ## Retrieving and displaying hoverdata  ##
-@dash.callback(
-    Output('p1_round_count', 'children'),
-    Output('p2_round_count', 'children'),
-#    Output('p1_health_bar', 'children'),
-    #Output('p2_health_bar', 'children'),
-    Output('p1_burst_bar', 'children'),
-    Output('p2_burst_bar', 'children'),
-    Output('p1_tension_bar', 'children'),
-    Output('p2_tension_bar', 'children'),
-    Output('p1_counter', 'children'),
-    Output('p2_counter', 'children'),
-    Output('p1_spell', 'children'),
-    Output('p2_spell', 'children'),
-    Output('p1_spell_percentile', 'children'),
-    Output('p2_spell_percentile', 'children'),
-    Output('round_win_prob_bar', 'children'),
-    Output('set_win_prob_bar', 'children'),
-    Input('pred_graph', 'hoverData'),
-    State('curr_match_df', 'data'),
-    State('curr_asuka_stats_df', 'data'),
-    prevent_intial_call=True
-)
-def display_hover_data(hoverData, curr_match_df, curr_asuka_stats_df):
-    bars = DEFAULT_BARS
-    data_dict = {}
-    spell_data = {}
-    x = None
-    if hoverData != None:
-        x = str(hoverData['points'][0]['x'])
-        curr_state = curr_match_df[x] if x in curr_match_df else None
-        for player in [P1, P2]:
-            if(curr_state):
-                data_dict[player] = {}
-                for value in ['health', 'tension', 'burst', 'counter', 'curr_damaged', 'round_count']:
-                    data_dict[player][value] = curr_state[f'{player}_{value}']
-                if player == P1:
-                    p1_round_win_prob =  round(curr_state[f'smooth_round_pred'] * 100, 1)
-                    bars['round_win_prob'] = html.Div([html.Div(f'{p1_round_win_prob}%'), html.Div(f'{round(100 - p1_round_win_prob, 1)}%')], style={"--w": f'{p1_round_win_prob}%'}, className="win_prob_bar bar_text")
-                    p1_set_win_prob =  round(curr_state[f'smooth_set_pred'] * 100, 1)
-                    bars['set_win_prob'] = html.Div([html.Div(f'{p1_set_win_prob}%'), html.Div(f'{round(100 - p1_set_win_prob, 1)}%')], style={"--w": f'{p1_set_win_prob}%'}, className="win_prob_bar bar_text")
-            if curr_asuka_stats_df:
-                if player in curr_asuka_stats_df:
-                    curr_asuka_state = curr_asuka_stats_df[player][x] if x in curr_asuka_stats_df[player] else {}
-                    if curr_asuka_state:
-                        spell_data[player] = {}
-                        spell_data[player]['spells'] = [curr_asuka_state[f'asuka_spell_{num}'] for num in list(range(1,5))]
-                        spell_data[player]['percentile'] = curr_asuka_state['spell_percentile_mlp']
-        spells = display_asuka_spell_data(spell_data, default_value=no_update)
-    else:
-        data_dict = DEFAULT_PRED_HD
-        spells = display_asuka_spell_data(spell_data)
-    for player_side in data_dict.keys():
-        data = data_dict[player_side]
-        for bar in ["health", "burst", "tension"]:
-            value = round(100 * data[bar], 2)
-            background_style = {}
-            bar_class_name = f'{player_side}_{bar} bar_text'
-            background_class_name = f'bar_container {player_side}'
-            if bar == "health" and data['curr_damaged']:
-                background_class_name += " curr_dmg"
-                background_style = {"--cd_w": f'{value+10}%'}
-            elif bar == "burst":
-                background_style = {"width": "40%"}
-            bars[player_side][bar] = html.Div([html.Div([f"{value}%"], style={"--w": f"{value}%"}, className=bar_class_name)], className=background_class_name, style=background_style)
-        bars[player_side]["counter"] = html.Div([data["counter"]], className=f"bar_label {player_side}", style={"font-size": "30px"})
-        curr_hearts = copy.deepcopy(hearts_default)
-        for i in range(data['round_count']):
-            curr_hearts[i].src = dash.get_asset_url(EMPTY_HEART)
-        heart_side = "p1" if player_side == P2 else "p2"
-        curr_hearts = curr_hearts if heart_side == P1 else curr_hearts[::-1]
-        bars[heart_side]["round_count"] = html.Div(curr_hearts)
+# @dash.callback(
+#     Output('p1_round_count', 'children'),
+#     Output('p2_round_count', 'children'),
+# #    Output('p1_health_bar', 'children'),
+#     #Output('p2_health_bar', 'children'),
+#     Output('p1_burst_bar', 'children'),
+#     Output('p2_burst_bar', 'children'),
+#     Output('p1_tension_bar', 'children'),
+#     Output('p2_tension_bar', 'children'),
+#     Output('p1_counter', 'children'),
+#     Output('p2_counter', 'children'),
+#     Output('p1_spell', 'children'),
+#     Output('p2_spell', 'children'),
+#     Output('p1_spell_percentile', 'children'),
+#     Output('p2_spell_percentile', 'children'),
+#     Output('round_win_prob_bar', 'children'),
+#     Output('set_win_prob_bar', 'children'),
+#     Input('pred_graph', 'hoverData'),
+#     State('curr_match_df', 'data'),
+#     State('curr_asuka_stats_df', 'data'),
+#     prevent_intial_call=True
+# )
+# def display_hover_data(hoverData, curr_match_df, curr_asuka_stats_df):
+#     bars = DEFAULT_BARS
+#     data_dict = {}
+#     spell_data = {}
+#     x = None
+#     if hoverData != None:
+#         x = str(hoverData['points'][0]['x'])
+#         curr_state = curr_match_df[x] if x in curr_match_df else None
+#         for player in [P1, P2]:
+#             if(curr_state):
+#                 data_dict[player] = {}
+#                 for value in ['health', 'tension', 'burst', 'counter', 'curr_damaged', 'round_count']:
+#                     data_dict[player][value] = curr_state[f'{player}_{value}']
+#                 if player == P1:
+#                     p1_round_win_prob =  round(curr_state[f'smooth_round_pred'] * 100, 1)
+#                     bars['round_win_prob'] = html.Div([html.Div(f'{p1_round_win_prob}%'), html.Div(f'{round(100 - p1_round_win_prob, 1)}%')], style={"--w": f'{p1_round_win_prob}%'}, className="win_prob_bar bar_text")
+#                     p1_set_win_prob =  round(curr_state[f'smooth_set_pred'] * 100, 1)
+#                     bars['set_win_prob'] = html.Div([html.Div(f'{p1_set_win_prob}%'), html.Div(f'{round(100 - p1_set_win_prob, 1)}%')], style={"--w": f'{p1_set_win_prob}%'}, className="win_prob_bar bar_text")
+#             if curr_asuka_stats_df:
+#                 if player in curr_asuka_stats_df:
+#                     curr_asuka_state = curr_asuka_stats_df[player][x] if x in curr_asuka_stats_df[player] else {}
+#                     if curr_asuka_state:
+#                         spell_data[player] = {}
+#                         spell_data[player]['spells'] = [curr_asuka_state[f'asuka_spell_{num}'] for num in list(range(1,5))]
+#                         spell_data[player]['percentile'] = curr_asuka_state['spell_percentile_mlp']
+#         spells = display_asuka_spell_data(spell_data, default_value=no_update)
+#     else:
+#         data_dict = DEFAULT_PRED_HD
+#         spells = display_asuka_spell_data(spell_data)
+#     for player_side in data_dict.keys():
+#         data = data_dict[player_side]
+#         for bar in ["health", "burst", "tension"]:
+#             value = round(100 * data[bar], 2)
+#             background_style = {}
+#             bar_class_name = f'{player_side}_{bar} bar_text'
+#             background_class_name = f'bar_container {player_side}'
+#             if bar == "health" and data['curr_damaged']:
+#                 background_class_name += " curr_dmg"
+#                 background_style = {"--cd_w": f'{value+10}%'}
+#             elif bar == "burst":
+#                 background_style = {"width": "40%"}
+#             bars[player_side][bar] = html.Div([html.Div([f"{value}%"], style={"--w": f"{value}%"}, className=bar_class_name)], className=background_class_name, style=background_style)
+#         bars[player_side]["counter"] = html.Div([data["counter"]], className=f"bar_label {player_side}", style={"font-size": "30px"})
+#         curr_hearts = copy.deepcopy(hearts_default)
+#         for i in range(data['round_count']):
+#             curr_hearts[i].src = dash.get_asset_url(EMPTY_HEART)
+#         heart_side = "p1" if player_side == P2 else "p2"
+#         curr_hearts = curr_hearts if heart_side == P1 else curr_hearts[::-1]
+#         bars[heart_side]["round_count"] = html.Div(curr_hearts)
 
-    return bars[P1]["round_count"], bars[P2]["round_count"],\
-            bars[P1]["burst"], bars[P2]["burst"],\
-            bars[P1]["tension"], bars[P2]["tension"],\
-            bars[P1]["counter"], bars[P2]["counter"],\
-            spells[P1]['spell'], spells[P2]['spell'],\
-            spells[P1]['percentile'], spells[P2]['percentile'],\
-            bars['round_win_prob'], bars['set_win_prob']
-            #bars[P2]["health"],\
+#     return bars[P1]["round_count"], bars[P2]["round_count"],\
+#             bars[P1]["burst"], bars[P2]["burst"],\
+#             bars[P1]["tension"], bars[P2]["tension"],\
+#             bars[P1]["counter"], bars[P2]["counter"],\
+#             spells[P1]['spell'], spells[P2]['spell'],\
+#             spells[P1]['percentile'], spells[P2]['percentile'],\
+#             bars['round_win_prob'], bars['set_win_prob']
+#             #bars[P2]["health"],\
 
 
 ## Asuka spell hoverdata ##
@@ -216,7 +216,7 @@ def display_asuka_spell_data(spell_data, default_value=no_update):
             opactiy = 1.0 if spell != 'used_spell' else 0.0
             src = dash.get_asset_url(f'images/spells/{spell}.png')
             style={"opacity": opactiy}
-            spell_list.append(html.Img(src=src, style=style, className='spell'))
+            spell_list.append(html.Img(src=src, id='p1_spell_1', style=style, className='spell'))
         spells[player_side]['spell'] = [html.Div(spell_list, className="spell_background")]
         spells[player_side]['percentile'] = [dbc.Label(f"{player_data['percentile']}%", className='spell_label')]
 

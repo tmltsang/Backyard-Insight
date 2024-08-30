@@ -1,8 +1,8 @@
 
 
 const CDN_URL = "https://cdn.jsdelivr.net/gh/tmltsang/Backyard-Insight";
-const FULL_HEART = 'assets/images/ui/Hud_Heart_Neutral.png';
-const EMPTY_HEART = 'assets/images/ui/Hud_Heart_Blank.png';
+const FULL_HEART = `${CDN_URL}/assets/images/ui/Hud_Heart_Neutral.png`;
+const EMPTY_HEART = `${CDN_URL}/assets/images/ui/Hud_Heart_Blank.png`;
 const DEFAULT_HEALTH = 1;
 const DEFAULT_TENSION = 0;
 const DEFAULT_BURST = 1;
@@ -63,28 +63,8 @@ function createImg(src, style={}, className="") {
 window.dash_clientside = Object.assign({}, window.dash_clientside, {
     clientside: {
         hover_data: function(hoverData, currMatchDf, currAsukaStatsDf) {
-            let bars = {
-                p1: {
-                    round_count:  window.dash_clientside.no_update,
-                    health:  window.dash_clientside.no_update,
-                    burst:  window.dash_clientside.no_update,
-                    tension:  window.dash_clientside.no_update,
-                    counter:  window.dash_clientside.no_update,
-                },
-                p2: {
-                    round_count:  window.dash_clientside.no_update,
-                    health:  window.dash_clientside.no_update,
-                    burst:  window.dash_clientside.no_update,
-                    tension:  window.dash_clientside.no_update,
-                    counter:  window.dash_clientside.no_update,
-                },
-                round_win_prob:  window.dash_clientside.no_update,
-                set_win_prob:  window.dash_clientside.no_update
-            };
             const dataDict = {};
-            const spellData = {};
             let x = null;
-            console.log(hoverData)
             if (hoverData !== undefined) {
                 x = hoverData.points[0].x;
                 const currState = currMatchDf[x] || null;
@@ -96,65 +76,67 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                         }
                         if (player === P1) {
                             const p1RoundWinProb = Math.round(currState.smooth_round_pred * 100 * 10) / 10;
-                            bars.round_win_prob = createDiv([
-                                createDiv([`${p1RoundWinProb}%`]),
-                                createDiv([`${Math.round(100 - p1RoundWinProb * 10) / 10}%`])
-                            ], style={ "--w": `${p1RoundWinProb}%` }, className="win_prob_bar bar_text");
+                            window.dash_clientside.set_props('round_win_prob_bar', {'style':{"--w": `${p1RoundWinProb}%`}})
+                            window.dash_clientside.set_props('p1_round_win_text', {'children':[`${p1RoundWinProb}%`]})
+                            window.dash_clientside.set_props('p2_round_win_text', {'children':[`${Math.round((100 - p1RoundWinProb) * 10) / 10 }%`]})
+
                             const p1SetWinProb = Math.round(currState.smooth_set_pred * 100 * 10) / 10;
-                            bars.set_win_prob = createDiv([
-                                createDiv([`${p1SetWinProb}%`]),
-                                createDiv([`${Math.round(100 - p1SetWinProb * 10) / 10}%`])
-                            ], style={ "--w": `${p1SetWinProb}%` }, className="win_prob_bar bar_text");
+                            window.dash_clientside.set_props('set_win_prob_bar', {'style':{"--w": `${p1SetWinProb}%`}})
+                            window.dash_clientside.set_props('p1_match_win_text', {'children':[`${p1SetWinProb}%`]})
+                            window.dash_clientside.set_props('p2_match_win_text', {'children':[`${Math.round((100 - p1SetWinProb) * 10) / 10}%`]})
+
                         }
                     }
                     if (currAsukaStatsDf) {
                         if (currAsukaStatsDf[player]) {
-                            const currAsukaState = currAsukaStatsDf[player][x] || {};
+                            const currAsukaState = currAsukaStatsDf[player][x] || null;
+                            console.log(currAsukaState)
                             if (currAsukaState) {
-                                spellData[player] = {};
-                                spellData[player].spells = Array.from({ length: 4 }, (_, num) => currAsukaState[`asuka_spell_${num + 1}`]);
-                                spellData[player].percentile = currAsukaState.spell_percentile_mlp;
+                                let spells = Array.from({ length: 4 }, (_, num) => currAsukaState[`asuka_spell_${num + 1}`]);
+                                for (let i = 0; i < 4; i++) {
+                                    window.dash_clientside.set_props(`${player}_spell_${i+1}`, {
+                                        src: `${CDN_URL}/assets/images/spells/${spells[i]}.png`,
+                                        style: {
+                                            'opacity': spells[i] !== 'used_spell' ? 1.0 : 0.0}
+                                    });
+                                }
+                                window.dash_clientside.set_props(`${player}_spell`, {style : {}})
+                                window.dash_clientside.set_props(`${player}_spell_percentile`, {'children': `${currAsukaState.spell_percentile_mlp}%`});
                             }
                         }
                     }
                 }
-                //const spells = displayAsukaSpellData(spellData, default_value = no_update);
-            } else {
-                //dataDict = DEFAULT_PRED_HD;
-                //const spells = displayAsukaSpellData(spellData);
-            }
-            for (const playerSide in dataDict) {
-                const data = dataDict[playerSide];
-                for (const bar of ["health", "burst", "tension"]) {
-                    const value = Math.round(100 * data[bar] * 100) / 100;
-                    const backgroundStyle = {};
-                    const barClassName = `${playerSide}_${bar} bar_text`;
-                    let backgroundClassName = `bar_container ${playerSide}`;
-                    if (bar === "health" && data.curr_damaged) {
-                        backgroundClassName += " curr_dmg";
-                        backgroundStyle["--cd_w"] = `${value + 10}%`;
-                    } else if (bar === "burst") {
-                        backgroundStyle.width = "40%";
-                    }
-                    console.log(dataDict)
-                    if (bar === "health"){
+                for (const playerSide in dataDict) {
+                    const data = dataDict[playerSide];
+                    for (const bar of ["health", "burst", "tension"]) {
+                        const value = Math.round(100 * data[bar] * 100) / 100;
+                        const backgroundStyle = {};
+                        const barClassName = `${playerSide}_${bar} bar_text`;
+                        let backgroundClassName = `bar_container ${playerSide}`;
+                        if (bar === "health" && data.curr_damaged) {
+                            backgroundClassName += " curr_dmg";
+                            backgroundStyle["--cd_w"] = `${value + 10}%`;
+                        } else if (bar === "burst") {
+                            backgroundStyle.width = "40%";
+                        }
                         window.dash_clientside.set_props(`${playerSide}_${bar}_bar`, {'style': backgroundStyle, 'className': backgroundClassName});
                         window.dash_clientside.set_props(`${playerSide}_${bar}_text`, {'children':[`${value}%` ], 'style': { "--w": `${value}%` }, 'className': barClassName});
                     }
-                    bars[playerSide][bar] = createDiv([
-                        createDiv([], style={ "--w": `${value}%` }, className=barClassName)
-                    ], style=backgroundStyle, className=backgroundClassName);
-                }
 
-                bars[playerSide].counter = createDiv([data.counter], className=`bar_label ${playerSide}`, style={ "fontSize": "30px" });
+                    window.dash_clientside.set_props(`${playerSide}_counter`, {'children': [data.counter]});
 
-                let currHearts = [createImg(src=`${CDN_URL}/${FULL_HEART}`, className="sub_heart"), createImg(src=`${CDN_URL}/${FULL_HEART}`, className="main_heart")];
-                for (let i = 0; i < data.round_count; i++) {
-                    currHearts[i].src = `${CDN_URL}/${EMPTY_HEART}`
+                    const heartSide = playerSide === P2 ? P1 : P2;
+                    if (data.round_count == 0){
+                        window.dash_clientside.set_props(`${heartSide}_sub_heart`, {'src': FULL_HEART});
+                        window.dash_clientside.set_props(`${heartSide}_main_heart`, {'src': FULL_HEART});
+                    } else if (data.round_count == 1) {
+                        window.dash_clientside.set_props(`${heartSide}_sub_heart`, {'src': EMPTY_HEART});
+                        window.dash_clientside.set_props(`${heartSide}_main_heart`, {'src': FULL_HEART});
+                    } else {
+                        window.dash_clientside.set_props(`${heartSide}_sub_heart`, {'src': EMPTY_HEART});
+                        window.dash_clientside.set_props(`${heartSide}_main_heart`, {'src': EMPTY_HEART});
+                    }
                 }
-                const heartSide = playerSide === P2 ? "p1" : "p2";
-                currHearts = heartSide === P1 ? currHearts : currHearts.reverse();
-                bars[heartSide].round_count = createDiv(currHearts);
             }
             return [
                 window.dash_clientside.no_update
