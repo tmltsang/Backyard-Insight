@@ -48,9 +48,9 @@ pred_graph_tab = dbc.Card(
                 dbc.Col([html.Div(hearts_default[::-1])], id="p2_round_count", className='p2', width=5),
             ], justify='center', style={"height": "15%"}),
             dbc.Row([
-                dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p1_health bar_text")], className='p1 bar_container')], id="p1_health_bar", className="p1", width=5),
+                dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p1_health bar_text", id="p1_health_text")], id="p1_health_bar", className='p1 bar_container')], className="p1", width=5),
                 html.Div(dbc.Label("Health", className="bar_label"), className='bar_label_container'),
-                dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p2_health bar_text")], className='p2 bar_container')], id="p2_health_bar", className="p2", width=5),
+                dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p2_health bar_text", id="p2_health_text")], id="p2_health_bar", className='p2 bar_container')], className="p2", width=5),
             ], justify='center'),
             dbc.Row([
                 dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p1_burst bar_text")], className='p1 bar_container', style={"width": "33%"})], id="p1_burst_bar", className="p1", width=5),
@@ -89,6 +89,7 @@ pred_graph_tab = dbc.Card(
             graphs,
             dcc.Store(id='curr_match_df'),
             dcc.Store(id='curr_asuka_stats_df'),
+            dcc.Store(id='dummy'),
         ])
     ])
 )

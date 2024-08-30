@@ -67,7 +67,7 @@ MAX_ROUNDS = 2
 FULL_HEART = 'images/ui/Hud_Heart_Neutral.png'
 EMPTY_HEART = 'images/ui/Hud_Heart_Blank.png'
 
-CDN_URL = "https://cdn.jsdelivr.net/gh/tmltsang/ggstrive_tournament_dashboard/"
+CDN_URL = "https://cdn.jsdelivr.net/gh/tmltsang/Backyard-Insight/"
 
 DEFAULT_BARS = {
     P1: {

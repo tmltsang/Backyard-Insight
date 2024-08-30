@@ -120,8 +120,8 @@ def create_match_stats_fig(match_stats_dff, graph_type, stat_selection, stat_lab
 @dash.callback(
     Output('p1_round_count', 'children'),
     Output('p2_round_count', 'children'),
-    Output('p1_health_bar', 'children'),
-    Output('p2_health_bar', 'children'),
+#    Output('p1_health_bar', 'children'),
+    #Output('p2_health_bar', 'children'),
     Output('p1_burst_bar', 'children'),
     Output('p2_burst_bar', 'children'),
     Output('p1_tension_bar', 'children'),
@@ -136,7 +136,8 @@ def create_match_stats_fig(match_stats_dff, graph_type, stat_selection, stat_lab
     Output('set_win_prob_bar', 'children'),
     Input('pred_graph', 'hoverData'),
     State('curr_match_df', 'data'),
-    State('curr_asuka_stats_df', 'data')
+    State('curr_asuka_stats_df', 'data'),
+    prevent_intial_call=True
 )
 def display_hover_data(hoverData, curr_match_df, curr_asuka_stats_df):
     bars = DEFAULT_BARS
@@ -187,14 +188,16 @@ def display_hover_data(hoverData, curr_match_df, curr_asuka_stats_df):
         heart_side = "p1" if player_side == P2 else "p2"
         curr_hearts = curr_hearts if heart_side == P1 else curr_hearts[::-1]
         bars[heart_side]["round_count"] = html.Div(curr_hearts)
+
     return bars[P1]["round_count"], bars[P2]["round_count"],\
-            bars[P1]["health"], bars[P2]["health"],\
             bars[P1]["burst"], bars[P2]["burst"],\
             bars[P1]["tension"], bars[P2]["tension"],\
             bars[P1]["counter"], bars[P2]["counter"],\
             spells[P1]['spell'], spells[P2]['spell'],\
             spells[P1]['percentile'], spells[P2]['percentile'],\
             bars['round_win_prob'], bars['set_win_prob']
+            #bars[P2]["health"],\
+
 
 ## Asuka spell hoverdata ##
 def display_asuka_spell_data(spell_data, default_value=no_update):
@@ -218,6 +221,17 @@ def display_asuka_spell_data(spell_data, default_value=no_update):
         spells[player_side]['percentile'] = [dbc.Label(f"{player_data['percentile']}%", className='spell_label')]
 
     return spells
+
+dash.clientside_callback(
+    dash.ClientsideFunction(
+        namespace='clientside',
+        function_name='hover_data'
+    ),
+    Output('dummy', 'data'),
+    Input('pred_graph', 'hoverData'),
+    State('curr_match_df', 'data'),
+    State('curr_asuka_stats_df', 'data'),
+)
 
 @dash.callback(
     Output("about-modal", "is_open"),
