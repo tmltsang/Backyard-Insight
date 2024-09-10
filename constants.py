@@ -4,9 +4,6 @@ import plotly.express as px
 P1 = 'p1'
 P2 = 'p2'
 
-# PLAYER_COLOURS = {'p1': 'rgb(239, 85, 59)',
-#                   'p2': 'rgb(99, 110, 250)'}
-
 def PLAYER_COLOURS(player, opacity=0.8):
     if player == P1:
         return f'rgba(239, 85, 59, {opacity})'
@@ -27,15 +24,13 @@ VAR_COLOURS = {
 }
 
 STAT_TITLE = {'burst_count': 'Psych Burst Count',
-         'burst_use': 'Burst Bar Used',
-         'tension_use': 'Tension Used',
-         'first_hit': 'First Hit',
+         'burst_use': 'Burst Bars Used',
+         'tension_use': 'Tension Bars Used',
+         'first_hit': 'First Hits',
          'round_lead': 'Round Probability Lead',
          'set_lead': 'Set Probability Lead',}
 
 STAT_OPTIONS = [{'label': title, 'value': value}for value, title in STAT_TITLE.items()]
-
-
 
 WIN_PATTERN = ""
 LOSS_PATTERN = "/"
@@ -72,7 +67,7 @@ MAX_ROUNDS = 2
 FULL_HEART = 'images/ui/Hud_Heart_Neutral.png'
 EMPTY_HEART = 'images/ui/Hud_Heart_Blank.png'
 
-CDN_URL = "https://cdn.jsdelivr.net/gh/tmltsang/ggstrive_tournament_dashboard/"
+CDN_URL = "https://cdn.jsdelivr.net/gh/tmltsang/Backyard-Insight/"
 
 DEFAULT_BARS = {
     P1: {
@@ -92,3 +87,18 @@ DEFAULT_BARS = {
     'round_win_prob': no_update,
     'set_win_prob': no_update
 }
+
+MAX_PLAYER_NAME_LEN = 13
+
+#### CONFIG KEYS ####
+LOCAL_KEY = 'LOCAL'
+DEBUG_KEY = 'DEBUG'
+ATLAS_URI_KEY = 'ATLAS_URI'
+DB_NAME_KEY = 'DB_NAME'
+COLLECTION_MATCH_KEY = 'COLLECTION_MATCH'
+COLLECTION_MATCH_STATS_KEY = 'COLLECTION_MATCH_STATS'
+COLLECTION_ASUKA_MATCH_STATS_KEYS = 'COLLECTION_ASUKA_MATCH'
+LOCAL_MATCH_KEY = 'LOCAL_MATCH'
+LOCAL_MATCH_STATS_KEY = 'LOCAL_MATCH_STATS'
+LOCAL_ASUKA_KEY = 'LOCAL_ASUKA'
+IS_DOCKER_KEY = 'IS_DOCKER'

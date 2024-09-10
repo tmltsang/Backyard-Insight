@@ -3,9 +3,18 @@
     src: url('fonts/Impact - Strive.otf')
 }
 
+.title {
+    font-size: 4rem;
+    /* background-image: url(images/Lars_Canyon.webp);
+    background-size: cover;
+    background-repeat: no-repeat; */
+    background-color: #cc0000;
+    padding: 2rem 1rem;
+}
+
 .bar_container {
     width:100%;
-    margin-bottom: 15px;
+    margin-bottom: 1rem;
     background-repeat:no-repeat;
     min-width: 0;
     display:flex;
@@ -36,7 +45,7 @@
     text-align: center;
     color: rgb(0, 0, 0);
     font-family: strive;
-    font-size: 20px;
+    font-size: 1.25rem;
     min-width: 0;
     text-shadow:
     1px 1px 0 white,
@@ -87,19 +96,21 @@
     min-width: 0;
 }
 
-.bar_label {
-    /* display: block; */
+.bar_label_container {
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
     width:10%;
     line-height: 150%;
+}
+
+.bar_label {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: strive;
-    font-size: 28px;
+    font-size: 1.75rem;
     text-shadow:
     2px 2px 0 black,
     -2px 2px 0 black,
@@ -134,22 +145,25 @@
     align-items: center;
     justify-content: center;
     font-family: strive;
-    font-size: 30px;
+    font-size: 1.875rem;
     width:15%
 }
 
 .main_heart{
     width: auto;
-    height: 50%;
+    height: 100%;
+    max-width: 100%;
 }
 
 .sub_heart {
     width: auto;
-    height: 35%;
+    height: 70%;
+    max-width: 100%;
 }
 
 .heart_container {
-    height:25%
+    height:90%;
+    align-items: center;
 }
 
 .player_name_container {
@@ -160,13 +174,13 @@
 .player_name {
     text-align: center;
     font-family: strive;
-    font-size: 25px;
+    font-size: 1.5rem;
 }
 
 .player_name_overlay {
     text-align: center;
     font-family: strive;
-    font-size: 30px;
+    font-size: 1.875rem;
     position: absolute;
     top: 90%;
     left: 50%;
@@ -206,4 +220,10 @@
     justify-content: space-between;
     padding: 0;
     width: 95%
+}
+
+.footer {
+    font-size: 0.75rem;
+    color: #7B7A8E;
+    margin-right: 15%;
 }
