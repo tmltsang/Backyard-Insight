@@ -324,7 +324,7 @@ def add_misc_graph_data(fig, dff, p1_player_name, p2_player_name):
             showlegend=True if i == 0 else False
             while i+1 < len(curr_dmg_start_times) and (curr_dmg_start_times[i+1] - curr_dmg_end_times[i] < 0.2):
                 i+=1
-            fig.add_shape(type='rect', name='Damaged', x0=start_time, x1=curr_dmg_end_times[i], y0=0, y1=100, fillcolor=PLAYER_COLOURS(player), opacity=0.2, showlegend=showlegend, visible='legendonly', legendgrouptitle_text='dmg', legendgroup=f'Damaged', legend="legend" if player == P1 else "legend2")
+            fig.add_shape(type='rect', name='Damaged', x0=start_time, x1=curr_dmg_end_times[i], y0=0, y1=100, fillcolor=PLAYER_COLOURS(player), opacity=0.2, showlegend=showlegend, legendgroup=f'{player}_damaged', legend="legend" if player == P1 else "legend2")
             i+=1
     return fig
 
