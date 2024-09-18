@@ -11,7 +11,7 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
         hovermode="x",
         template='plotly_dark',
         grid=dict(rows=1, columns=1),
-        font_family="GGFont_STRIVE",
+        font_family="Helvetica",
         font_size=24,
         xaxis_title = 'Time',
         yaxis = dict(
@@ -21,21 +21,24 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
             font_size=20,
         ),
         title="Match Prediction",
+        autosize=True,
         legend=dict(
             title=p1_player_name.upper(),
             orientation='h',
+            font_size=12,
             yanchor="bottom",
             y=1.15,
             xanchor="right",
-            x=0.99
+            x=1.00
         ),
         legend2=dict(
             title=p2_player_name.upper(),
             orientation='h',
+            font_size=12,
             yanchor="bottom",
             y=1.05,
             xanchor="right",
-            x=0.99
+            x=1.00
         )
     )
 
@@ -163,7 +166,7 @@ def apply_standard_layout(fig, graph_title):
                       title_font_size=24,
                       showlegend=True,
                       template='plotly_dark',
-                      font_family="GGFont_STRIVE",
+                      font_family="Helvetica",
                       font_size=18,
                       legend=dict(
                             yanchor="top",
@@ -279,7 +282,7 @@ def combine_graphs_row(figure_list, graph_title):
     fig = make_subplots(1, len(full_trace_list), subplot_titles=trace_list_name, specs=[[{'type':'domain'}]*len(full_trace_list)])
     for i in range(len(full_trace_list)):
         fig.add_trace(full_trace_list[i], row=1, col=i+1)
-    fig.update_layout(title_text=graph_title, title_font_size=24, showlegend=False,template='plotly_dark', font_family="GGFont_STRIVE")
+    fig.update_layout(title_text=graph_title, title_font_size=24, showlegend=False,template='plotly_dark', font_family="Helvetica")
     fig.update_annotations(font_size=20)
     return fig
 

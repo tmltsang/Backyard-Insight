@@ -62,11 +62,12 @@ function createImg(src, style={}, className="") {
 
 window.dash_clientside = Object.assign({}, window.dash_clientside, {
     clientside: {
-        hover_data: function(hoverData, currMatchDf, currAsukaStatsDf) {
+        hover_data: function(hoverData, clickData, currMatchDf, currAsukaStatsDf) {
             const dataDict = {};
             let x = null;
-            if (hoverData !== undefined) {
-                x = hoverData.points[0].x;
+            data = hoverData || clickData;
+            if (data !== undefined) {
+                x = data.points[0].x;
                 const currState = currMatchDf[x] || null;
                 for (const player of [P1, P2]) {
                     if (currState) {
@@ -90,7 +91,6 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                     if (currAsukaStatsDf) {
                         if (currAsukaStatsDf[player]) {
                             const currAsukaState = currAsukaStatsDf[player][x] || null;
-                            console.log(currAsukaState)
                             if (currAsukaState) {
                                 let spells = Array.from({ length: 4 }, (_, num) => currAsukaState[`asuka_spell_${num + 1}`]);
                                 for (let i = 0; i < 4; i++) {

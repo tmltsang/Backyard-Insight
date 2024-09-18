@@ -19,7 +19,7 @@ dropdowns = html.Div([
 ])
 
 controls = dbc.Card([dropdowns], )
-graphs = dbc.Card([dbc.Spinner(dcc.Graph(id='pred_graph', style={'height': '80vh', 'visibility': 'hidden', 'text-align': 'center'}), color="primary"), dcc.Tooltip(id='pred-graph-tooltip')])
+graphs = dbc.Card([dbc.Spinner(dcc.Graph(id='pred_graph', className='graph', responsive=True), color="primary"), dcc.Tooltip(id='pred-graph-tooltip')])
 
 default_spell_info = [
                         dbc.Row([
@@ -49,27 +49,27 @@ pred_graph_tab = dbc.Card(
             dbc.Col([
             dbc.Row([
                 dbc.Col([html.Img(src=dash.get_asset_url(FULL_HEART), id='p1_sub_heart', className="sub_heart"), html.Img(src=dash.get_asset_url(FULL_HEART), id='p1_main_heart', className="main_heart")], id="p1_round_count", className='p1 heart_container', width=5),
-                html.Div(dbc.Label("Round", className="bar_label", style={'height': '100%'}), className='bar_label_container'),
+                html.Div(dbc.Label("Round", className="bar_label", style={'height': '100%'}), className='bar_label_container center_label'),
                 dbc.Col([html.Img(src=dash.get_asset_url(FULL_HEART),  id='p2_main_heart', className="main_heart"), html.Img(src=dash.get_asset_url(FULL_HEART), id='p2_sub_heart', className="sub_heart")], id="p2_round_count", className='p2 heart_container', width=5),
             ], justify='center', style={"height": "15%"}),
             dbc.Row([
                 dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p1_health bar_text", id="p1_health_text")], id="p1_health_bar", className='p1 bar_container')], className="p1", width=5),
-                html.Div(dbc.Label("Health", className="bar_label"), className='bar_label_container'),
+                html.Div(dbc.Label("Health", className="bar_label"), className='bar_label_container center_label'),
                 dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p2_health bar_text", id="p2_health_text")], id="p2_health_bar", className='p2 bar_container')], className="p2", width=5),
             ], justify='center',),
             dbc.Row([
                 dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p1_burst bar_text", id="p1_burst_text")], id="p1_burst_bar", className='p1 bar_container', style={"width": "33%"})], className="p1", width=5),
-                html.Div(dbc.Label("Burst", className="bar_label"), className='bar_label_container'),
+                html.Div(dbc.Label("Burst", className="bar_label"), className='bar_label_container center_label'),
                 dbc.Col([html.Div([html.Div(["100%"], style={"--w": "100%"}, className="p2_burst bar_text", id="p2_burst_text")], id="p2_burst_bar", className='p2 bar_container', style={"width": "33%"})], className="p2", width=5),
             ], justify='center',),
             dbc.Row([
                 dbc.Col([html.Div([html.Div(["0%"], style={"--w": "0%"}, className="p1_tension bar_text", id="p1_tension_text")], id="p1_tension_bar", className='p1 bar_container')], className="p1", width=5),
-                html.Div(dbc.Label("Tension", className="bar_label"), className='bar_label_container'),
+                html.Div(dbc.Label("Tension", className="bar_label"), className='bar_label_container center_label'),
                 dbc.Col([html.Div([html.Div(["0%"], style={"--w": "0%"}, className="p2_tension bar_text", id="p2_tension_text")], id="p2_tension_bar", className='p2 bar_container')], className="p2", width=5),
             ], justify='center',),
             dbc.Row([
                 dbc.Col([html.Div([0], className='bar_label p1', style={'font-size': '1.875rem'}, id="p1_counter")], className="p1", width=5),
-                html.Div(dbc.Label("Counter", className="bar_label"), className='bar_label_container'),
+                html.Div(dbc.Label("Counter", className="bar_label"), className='bar_label_container center_label'),
                 dbc.Col([html.Div([0], className='bar_label p2', style={'font-size': '1.875rem'}, id="p2_counter")], className="p2", width=5),
             ], justify='center', style={"height": "15%"}),
             ], width=8),
@@ -106,7 +106,7 @@ match_stats = dbc.Card(
         dcc.Dropdown(STAT_OPTIONS, 'burst_count', clearable=False, id='stat-selection', className='dbc'),
         dbc.Label('Graph Type'),
         dcc.Dropdown(['Pie', 'Sunburst', 'Bar'], 'Pie', clearable=False, id='graph-selection', className='dbc'),
-        dcc.Graph(id='match_stats_graph', style={'height': '90vh', 'visibility': 'hidden'}),
+        dcc.Graph(id='match_stats_graph', style={'height': '90vh', 'visibility': 'hidden'}, responsive=True),
     ])
 )
 

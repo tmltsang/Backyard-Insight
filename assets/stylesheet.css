@@ -103,6 +103,7 @@
     text-align: center;
     width:10%;
     line-height: 150%;
+    padding:0px;
 }
 
 .bar_label {
@@ -110,7 +111,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: strive;
-    font-size: 1.75rem;
+    font-size: 1.1vw;
     text-shadow:
     2px 2px 0 black,
     -2px 2px 0 black,
@@ -227,3 +228,20 @@
     color: #7B7A8E;
     margin-right: 15%;
 }
+
+.gtitle{
+    font-size: calc(14px + 14 * ((100vw - 320px) / 1600)) !important;
+}
+
+.graph {
+    height: 80vh;
+    min-height: 600px;
+    visibility: hidden;
+    text-align: center;
+}
+
+@media (max-width: 800px) {
+    .center_label {
+      display: none;
+    }
+  }

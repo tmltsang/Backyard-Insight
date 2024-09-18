@@ -1,6 +1,6 @@
 # Backyard Insight
 ![demo](docs/images/demo.gif)
-The dashboard for the metrics created by [Backyard-Observer](https://github.com/tmltsang/Backyard-Observer) for game Guilty Gear -Strive-, hosted on [backyard-insight.info]()
+The dashboard for the metrics created by [Backyard-Observer](https://github.com/tmltsang/Backyard-Observer) for game Guilty Gear -Strive-, hosted on [backyard-insight.info](https://backyard-insight.info/)
 
 For more information about the project, read [about.md](assets/text/about.md)
 
