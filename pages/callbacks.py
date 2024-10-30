@@ -24,7 +24,7 @@ hover_df=df.reset_index().set_index(['tournament', 'tournament_round', 'set_inde
     [Input('tournament-selection', 'value')]
 )
 def update_tr_dropdown(tournament):
-    return [{'label': f'{TOURNAMENT_ROUND_MAPPINGS[tr_round[0]]}: {tr_round[1]} vs {tr_round[2]}', 'value': tr_round[0]} for tr_round in df.loc[tournament].reset_index().set_index(['tournament_round', 'p1_player_name', 'p2_player_name']).index.unique()]
+    return [{'label': f'{GET_MAPPING(tr_round[0], TOURNAMENT_ROUND_MAPPINGS)}: {GET_MAPPING(tr_round[1], PLAYER_MAPPINGS)} vs {GET_MAPPING(tr_round[2], PLAYER_MAPPINGS)}', 'value': tr_round[0]} for tr_round in df.loc[tournament].reset_index().set_index(['tournament_round', 'p1_player_name', 'p2_player_name']).index.unique()]
 
 @dash.callback(
     Output('tr-selection', 'value'),
@@ -104,6 +104,7 @@ def update_graph(tr, set_num, active_tab, tournament):
 
     p1_player_name_div = [html.Img(src=dash.get_asset_url(f'images/portraits/{p1_char_name}.png'), className="player_portrait"), html.Div([p1_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS(P1)})]
     p2_player_name_div = [html.Img(src=dash.get_asset_url(f'images/portraits/{p2_char_name}.png'), className="player_portrait"), html.Div([p2_player_name.upper()], className="player_name_overlay name_shadow", style={"--outline": PLAYER_COLOURS(P2)})]
+
     return p1_player_name_div, p2_player_name_div, fig,  {'height': '55vh', 'visibility': 'visible'},\
             spell_info_style, default_spell_info, hover_df.loc[(tournament, tr, set_num)].to_dict('index'), asuka_stats_dict
 

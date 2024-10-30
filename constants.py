@@ -36,6 +36,11 @@ WIN_PATTERN = ""
 LOSS_PATTERN = "/"
 LOSS_SOLIDITY = 0.9
 
+def GET_MAPPING(code, mapping):
+    if code in mapping:
+        return mapping[code]
+    return code
+
 TOURNAMENT_ROUND_MAPPINGS = {
     'gf' : "Grand Finals",
     'gfr' : 'Grand Finals Reset',
@@ -49,6 +54,39 @@ TOURNAMENT_ROUND_MAPPINGS = {
     'wf1': "Winners Final",
     'wsf1': "Winners Semi-Final",
     'wsf2': "Winners Semi-Final",
+}
+
+TOURNAMENT_MAPPINGS = {
+    'arcsys_world_tour' : 'ArcSys World Tour',
+    'evo' : 'Evo',
+    'ufa': 'Ultimate Fighting Arena',
+    'vsf': 'VSFighting'
+}
+
+PLAYER_MAPPINGS = {
+    'leo' : 'Leo.',
+    'ooeygooeychewysnicker' : 'OoeyGooeyChewySnicker',
+    'tempestnyc': 'TempestNYC',
+    'tiger_pop': 'Tiger_Pop',
+    'jason thomas': 'Jason Thomas',
+    'gideontg': 'GideonTG',
+    'mattie' : 'mattie',
+    'verix': 'Verix',
+    'slash': 'Slash',
+    'zando': 'Zando',
+    'aarondamac': 'Aarondamac',
+    'umisho': 'UMISHO',
+    'pepperysplash': 'PepperySplash',
+    'nitro': 'Nitro',
+    'tatuma': 'tatuma',
+    'redditto': 'RedDitto',
+    'jack': 'Jack',
+    'sorani': 'Sorani',
+    'precho': 'Precho',
+    'crema': 'Crema',
+    'andross_11': 'Andross_11',
+    'setchi': 'Setchi',
+    'crillou': 'Crillou'
 }
 
 DEFAULT_HEALTH = 1

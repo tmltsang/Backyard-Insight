@@ -4,6 +4,8 @@ from constants import *
 import pandas as pd
 
 def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char_name):
+    p1_player_name = GET_MAPPING(p1_player_name, PLAYER_MAPPINGS)
+    p2_player_name = GET_MAPPING(p2_player_name, PLAYER_MAPPINGS)
     p1_player_name = p1_player_name if len(p1_player_name) < MAX_PLAYER_NAME_LEN else p1_player_name[:MAX_PLAYER_NAME_LEN] + '...'
     p2_player_name = p2_player_name if len(p2_player_name) < MAX_PLAYER_NAME_LEN else p2_player_name[:MAX_PLAYER_NAME_LEN] + '...'
 
@@ -55,7 +57,7 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
                                 legend='legend',
                                 showlegend=True if round_index==0 else False,
                                 line=dict(color=PLAYER_COLOURS(P1)),
-                                hovertemplate=p1_player_name.capitalize() + ": %{y:.1f}%"))
+                                hovertemplate=p1_player_name + ": %{y:.1f}%"))
         data.append(go.Scatter(x=dff.loc[round_index, 'set_time'],
                                 y=100-dff.loc[round_index, 'smooth_round_pred']*100,
                                 xaxis='x', yaxis='y1',
@@ -65,7 +67,7 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
                                 legend='legend2',
                                 showlegend=True if round_index==0 else False,
                                 line=dict(color=PLAYER_COLOURS(P2)),
-                                hovertemplate=p2_player_name.capitalize() + ":%{y:.1f}%"))
+                                hovertemplate=p2_player_name + ":%{y:.1f}%"))
 
     data.extend([go.Scatter(x=dff['set_time'],
                             y=current_set_pred_smooth,
@@ -78,7 +80,7 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
                             showlegend=True,
                             line=dict(color=PLAYER_COLOURS(P1),
                                       dash='dot'),
-                            hovertemplate=p1_player_name.capitalize() + ": %{y:.1f}%"),
+                            hovertemplate=p1_player_name + ": %{y:.1f}%"),
                  go.Scatter(x=dff['set_time'],
                             y=100-current_set_pred_smooth,
                             xaxis='x',
@@ -90,7 +92,7 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
                             showlegend=True,
                             line=dict(color=PLAYER_COLOURS(P2),
                                       dash='dot'),
-                            hovertemplate=p2_player_name.capitalize() + ": %{y:.1f}%")])
+                            hovertemplate=p2_player_name + ": %{y:.1f}%")])
     fig = go.Figure(data=data, layout=layout)
 
     final_round_times  = dff.groupby(['round_index']).tail(1)
@@ -296,7 +298,7 @@ def create_asuka_graph(fig, asuka_stats_dff, p1_player_name, p2_player_name):
         for round_index in player_dff.index.unique(level='round_index'):
             fig.add_trace(go.Scatter(x=player_dff.loc[round_index, 'set_time'], y=player_dff.loc[round_index, 'spell_percentile_svc'], xaxis='x', yaxis='y1', name='Spell Percentile',
                                 mode='lines', legend="legend" if player == P1 else "legend2", legendgroup=f'{player}_spell_percentile', showlegend=True if round_index==0 else False, visible='legendonly', line=dict(color=PLAYER_COLOURS(player), dash='dash', shape="linear"),
-                                hovertemplate=names[player].capitalize() + ": %{y:.1f}%"))
+                                hovertemplate=GET_MAPPING(names[player], PLAYER_MAPPINGS) + ": %{y:.1f}%"))
 
     return fig
 
