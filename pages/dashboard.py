@@ -11,10 +11,10 @@ df_match_stats = gg_data_client.get_all_match_stats()
 ### Defining Layout ####
 dropdowns = html.Div([
     dbc.Label("Tournament"),
-    dcc.Dropdown([{'label': GET_MAPPING(tournament, TOURNAMENT_MAPPINGS), 'value': tournament} for tournament in df_match_stats.index.unique(level='tournament')], 'evo', clearable=False, id='tournament-selection', className="dbc",),
+    dcc.Dropdown([{'label': GET_MAPPING(tournament, TOURNAMENT_MAPPINGS), 'value': tournament} for tournament in df_match_stats.index.unique(level='tournament')], 'vsf', clearable=False, id='tournament-selection', className="dbc",),
     dbc.Label("Tournament Round"),
     dcc.Dropdown(clearable=False, id='tr-selection', className="dbc", optionHeight=40),
-    dbc.Label("Match number"),
+    dbc.Label("Game number"),
     dcc.Dropdown(id='set-selection', clearable=False, className="dbc"),
 ])
 

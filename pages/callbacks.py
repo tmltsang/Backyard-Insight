@@ -14,6 +14,7 @@ import pandas as pd
 #### Load all the data ####
 df = gg_data_client.get_all_matches()
 df_match_stats = gg_data_client.get_all_match_stats()
+df_player_match_stats = gg_data_client.get_all_player_match_stats()
 df_asuka_stats = gg_data_client.get_all_asuka_data()
 hover_df=df.reset_index().set_index(['tournament', 'tournament_round', 'set_index', 'set_time']).sort_index()
 

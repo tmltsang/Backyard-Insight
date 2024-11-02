@@ -14,6 +14,8 @@ server = app.server
 
 navbar = dbc.NavbarSimple(
     children=[
+        dbc.NavItem(dbc.NavLink("Predictions", href='/', id="predictions-navlink", n_clicks=0)),
+        dbc.NavItem(dbc.NavLink("Player Stats", href='/player_stats', id="player-stats-navlink", n_clicks=0)),
         dbc.NavItem(dbc.NavLink("About", href='#', id="about-navlink", n_clicks=0)),
         dbc.Modal([dbc.ModalHeader(dbc.ModalTitle("About")), dcc.Markdown(children=[open('assets/text/about.md', 'r').read()])], size='xl', id="about-modal"),
         dbc.NavItem(dbc.NavLink(html.I(className="fa-brands fa-github"), href="https://github.com/tmltsang/ggstrive_tournament_dashboard")),

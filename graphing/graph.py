@@ -254,7 +254,7 @@ def create_bar_match_stats_graph(match_stats_dff, stat_col_name, graph_title, is
     rounds_index = match_stats_dff.index.unique(level='round_index')
     num_rounds = len(rounds_index)
     p1_round_win = match_stats_dff[f'p1_round_win']
-    p1_name = match_stats_dff[f'{P1}_player_name'].iat[0].upper()
+    p1_name = match_stats_dff[f'{P1}_player_name']
     p2_name = match_stats_dff[f'{P2}_player_name'].iat[0].upper()
 
     p1_match_stat = round(match_stats_dff[f'p1_{stat_col_name}'].sum(), 2)
