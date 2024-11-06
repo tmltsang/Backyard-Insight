@@ -170,6 +170,7 @@ PLAYER_STATS_COLS = [
                 'field': 'RW%',
                 'headerTooltip': 'Rounds Win%',
                 'tooltipField': 'Rounds Win%',
+                "valueFormatter": {"function": "Math.round((params.value*100)*100)/100+'%'"}
             },
         ]
     },
@@ -196,6 +197,7 @@ PLAYER_STATS_COLS = [
                 'field': 'GW%',
                 'headerTooltip': 'Game Win%',
                 'tooltipField': 'Games Win%',
+                "valueFormatter": {"function": "Math.round((params.value*100)*100)/100+'%'"}
             },
         ]
     },
@@ -211,6 +213,7 @@ PLAYER_STATS_COLS = [
                 'field': 'FH%',
                 'headerTooltip': 'First Hits (Percentage of total rounds player scored the first hit)',
                 'tooltipField': 'First Hit %',
+                "valueFormatter": {"function": "Math.round((params.value*100)*100)/100+'%'"}
             },
             {
                 'field': 'FHW',
@@ -221,6 +224,7 @@ PLAYER_STATS_COLS = [
                 'field': 'FHW%',
                 'headerTooltip': 'First Hit Win % (Percentage of rounds with a first hit that were won, FHW÷FH)',
                 'tooltipField': 'First Hit Win %',
+                "valueFormatter": {"function": "Math.round((params.value*100)*100)/100+'%'"}
             },
         ]
     },

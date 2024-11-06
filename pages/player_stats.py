@@ -186,24 +186,24 @@ def create_aggregate_stats_df(group_by):
     stats_df['FHW%'] = stats_df['FHW']/stats_df['FH']
 
     stats_df['PBCPG'] = group_by['burst_count'].sum()/stats_df['GP']
-    stats_df['PBCPGW'] = group_by['burst_count_win'].sum()/stats_df[stats_df['GW'] != 0]['GW']
-    stats_df['PBCPGL'] = group_by['burst_count_loss'].sum()/stats_df[stats_df['GL'] != 0]['GL']
+    stats_df['PBCPGW'] = group_by['burst_count_game_win'].sum()/stats_df[stats_df['GW'] != 0]['GW']
+    stats_df['PBCPGL'] = group_by['burst_count_game_loss'].sum()/stats_df[stats_df['GL'] != 0]['GL']
 
     stats_df['BPR'] = group_by['burst_use'].sum()/stats_df['RP']
     stats_df['BPRW'] = group_by['burst_use_win'].sum()/stats_df[stats_df['RW'] != 0]['RW']
     stats_df['BPRL'] = group_by['burst_use_loss'].sum()/stats_df[stats_df['RL'] != 0]['RL']
 
     stats_df['BPG'] = group_by['burst_use'].sum()/stats_df['GP']
-    stats_df['BPGW'] = group_by['burst_use_win'].sum()/stats_df[stats_df['GW'] != 0]['GW']
-    stats_df['BPGL'] = group_by['burst_use_loss'].sum()/stats_df[stats_df['GL'] != 0]['GL']
+    stats_df['BPGW'] = group_by['burst_use_game_win'].sum()/stats_df[stats_df['GW'] != 0]['GW']
+    stats_df['BPGL'] = group_by['burst_use_game_loss'].sum()/stats_df[stats_df['GL'] != 0]['GL']
 
     stats_df['TPR'] = group_by['tension_use'].sum()/stats_df['RP']
-    stats_df['TPRW'] = group_by['tension_use_win'].sum()/stats_df[stats_df['RW'] != 0]['RW']
-    stats_df['TPRL'] = group_by['tension_use_loss'].sum()/stats_df[stats_df['RL'] != 0]['RL']
+    stats_df['TPRW'] = group_by['tension_use_game_win'].sum()/stats_df[stats_df['RW'] != 0]['RW']
+    stats_df['TPRL'] = group_by['tension_use_game_loss'].sum()/stats_df[stats_df['RL'] != 0]['RL']
 
     stats_df['TPG'] = group_by['tension_use'].sum()/stats_df['GP']
-    stats_df['TPGW'] = group_by['tension_use_win'].sum()/stats_df[stats_df['GW'] != 0]['GW']
-    stats_df['TPGL'] = group_by['tension_use_loss'].sum()/stats_df[stats_df['GL'] != 0]['GL']
+    stats_df['TPGW'] = group_by['tension_use_game_win'].sum()/stats_df[stats_df['GW'] != 0]['GW']
+    stats_df['TPGL'] = group_by['tension_use_game_loss'].sum()/stats_df[stats_df['GL'] != 0]['GL']
     stats_df = stats_df.astype(float).fillna(0.0)
     stats_df = stats_df.round(2)
     stats_df.reset_index(inplace=True)
