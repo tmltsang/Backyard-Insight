@@ -136,11 +136,14 @@ ATLAS_URI_KEY = 'ATLAS_URI'
 DB_NAME_KEY = 'DB_NAME'
 COLLECTION_MATCH_KEY = 'COLLECTION_MATCH'
 COLLECTION_MATCH_STATS_KEY = 'COLLECTION_MATCH_STATS'
-COLLECTION_PLAYER_MATCH_STATS_KEY = 'COLLECTION_PLAYER_MATCH_STATS'
+COLLECTION_PLAYER_GAME_STATS_KEY = 'COLLECTION_PLAYER_GAME_STATS'
+COLLECTION_PLAYER_ROUND_STATS_KEY = 'COLLECTION_PLAYER_ROUND_STATS'
 COLLECTION_ASUKA_MATCH_STATS_KEYS = 'COLLECTION_ASUKA_MATCH'
+
 LOCAL_MATCH_KEY = 'LOCAL_MATCH'
 LOCAL_MATCH_STATS_KEY = 'LOCAL_MATCH_STATS'
-LOCAL_PLAYER_MATCH_STATS_KEY = 'LOCAL_PLAYER_MATCH_STATS'
+LOCAL_PLAYER_GAME_STATS_KEY = 'LOCAL_PLAYER_GAME_STATS'
+LOCAL_PLAYER_ROUND_STATS_KEY = 'LOCAL_PLAYER_ROUND_STATS'
 LOCAL_ASUKA_KEY = 'LOCAL_ASUKA'
 IS_DOCKER_KEY = 'IS_DOCKER'
 
@@ -313,12 +316,84 @@ PLAYER_STATS_COLS = [
     },
 ]
 
-PLAYER_STATS_COL_CHAR = {
-    'field': 'name',
-    'headerName': 'Character',
-    'headerTooltip': 'Character used by player',
-    'tooltipField': 'Character used by player',
-}
+PLAYER_STATS_GAME_COLS = [
+    {
+        'field': 'PS',
+        'headerTooltip': 'Player Side',
+        'tooltipField': 'Player Side',
+    },
+    {
+        'field': 'RP',
+        'headerTooltip': 'Rounds Played',
+        'tooltipField': 'Rounds Played',
+    },
+    {
+        'field': 'RW',
+        'headerTooltip': 'Round Wins',
+        'tooltipField': 'Round Wins',
+    },
+    {
+        'field': 'FH',
+        'headerTooltip': 'First Hits (Number of rounds player scored the first hit)',
+        'tooltipField': 'First Hits',
+    },
+    {
+        'field': 'FHW',
+        'headerTooltip': 'First Hit Wins (Number of rounds players scored the first hit and won)',
+        'tooltipField': 'First Hit Wins',
+    },
+    {
+        'field': 'PSYB',
+        'headerTooltip': 'Psych Burst Count',
+        'tooltipField': 'Psych Burst Count',
+    },
+    {
+        'field': 'BST',
+        'headerTooltip': 'Burst bars used',
+        'tooltipField': 'Burst bars used',
+    },
+    {
+        'field': 'TSN',
+        'headerTooltip': 'Tension gauge used',
+        'tooltipField': 'Tension gauge used',
+    },
+    {
+        'field': 'Win',
+        'headerTooltip': 'Win',
+    },
+]
+
+PLAYER_STATS_ROUND_COLS = [
+    {
+        'field': 'PS',
+        'headerTooltip': 'Player Side',
+        'tooltipField': 'Player Side',
+    },
+    {
+        'field': 'FH',
+        'headerTooltip': 'First Hits (Number of rounds player scored the first hit)',
+        'tooltipField': 'First Hits',
+    },
+    {
+        'field': 'PSYB',
+        'headerTooltip': 'Psych Burst Count',
+        'tooltipField': 'Psych Burst Count',
+    },
+    {
+        'field': 'BST',
+        'headerTooltip': 'Burst bars used',
+        'tooltipField': 'Burst bars used',
+    },
+    {
+        'field': 'TSN',
+        'headerTooltip': 'Tension gauge used',
+        'tooltipField': 'Tension gauge used',
+    },
+    {
+        'field': 'Win',
+        'headerTooltip': 'Win',
+    },
+]
 
 PLAYER_STATS_COL_TOURNAMENT = {
     'field': 'tournament',
@@ -326,6 +401,32 @@ PLAYER_STATS_COL_TOURNAMENT = {
     'headerTooltip': 'Tournament atteneded',
     'tooltipField': 'Tournament atteneded',
 }
+
+PLAYER_STATS_COL_TOURNAMENT_ROUND = {
+    'field': 'tournament_round',
+    'headerName': 'Tournament Round',
+    'headerTooltip': 'Tournament Round',
+}
+
+PLAYER_STATS_COL_CHAR = {
+    'field': 'name',
+    'headerName': 'Character',
+    'headerTooltip': 'Character used by player',
+    'tooltipField': 'Character used by player',
+}
+
+PLAYER_STATS_COL_GAME = {
+    'field': 'set_index',
+    'headerName': 'Game #',
+    'headerTooltip': 'Game Number in Match',
+}
+
+PLAYER_STATS_COL_ROUND = {
+    'field': 'round_index',
+    'headerName': 'Round #',
+    'headerTooltip': 'Round Number',
+}
+
 
 CHAR_MAPPINGS = {
     'sol': 'Sol Badguy',
