@@ -402,8 +402,8 @@ PLAYER_STATS_ROUND_COLS = [
 PLAYER_STATS_COL_TOURNAMENT = {
     'field': 'tournament',
     'headerName': 'Tournament',
-    'headerTooltip': 'Tournament atteneded',
-    'tooltipField': 'Tournament atteneded',
+    'headerTooltip': 'Tournament attended',
+    'tooltipField': 'Tournament attended',
 }
 
 PLAYER_STATS_COL_TOURNAMENT_ROUND = {
