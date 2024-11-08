@@ -85,7 +85,7 @@ pred_graph_tab = dbc.Card(
             html.Div([html.Div([html.Div("50%", id='p1_round_win_text'), html.Div("50%", id='p2_round_win_text')], style={"--w": "50%"}, id='round_win_prob_bar', className="win_prob_bar bar_text")], className='bar_container'),
         ], justify='center'),
         dbc.Row([
-             html.Div(dbc.Label("Match Win Probability", className="bar_label"), className='bar_label_container', style={'width': '100%'},),
+             html.Div(dbc.Label("Game Win Probability", className="bar_label"), className='bar_label_container', style={'width': '100%'},),
         ], justify='center'),
             dbc.Row([
             html.Div([html.Div([html.Div("50%", id='p1_match_win_text'), html.Div("50%", id='p2_match_win_text')], style={"--w": "50%"}, id='set_win_prob_bar', className="win_prob_bar bar_text")], className='bar_container'),
@@ -118,7 +118,7 @@ layout = dbc.Row([
             ),
     dbc.Col([
         dbc.Tabs([
-                    dbc.Tab(pred_graph_tab, id="pred_tab", tab_id="pred_tab", label="Match Prediction"),
-                    dbc.Tab(match_stats, id="match_tab", tab_id="match_tab", label="Match Stats"),
+                    dbc.Tab(pred_graph_tab, id="pred_tab", tab_id="pred_tab", label="Game Prediction"),
+                    dbc.Tab(match_stats, id="match_tab", tab_id="match_tab", label="Game Stats"),
                 ], id="tabs", active_tab="pred_tab")
             ], width={"size": 10})] ,style={'padding': '0.5rem'})

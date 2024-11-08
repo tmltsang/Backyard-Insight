@@ -22,7 +22,7 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
         hoverlabel=dict(
             font_size=20,
         ),
-        title="Match Prediction",
+        title="Game Prediction",
         autosize=True,
         legend=dict(
             title=p1_player_name.upper(),
@@ -73,7 +73,7 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
                             y=current_set_pred_smooth,
                             xaxis='x',
                             yaxis='y1',
-                            name='Match Win %',
+                            name='Game Win %',
                             mode='lines',
                             # legendgroup=p1_player_name,
                             legend="legend",
@@ -85,7 +85,7 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
                             y=100-current_set_pred_smooth,
                             xaxis='x',
                             yaxis='y1',
-                            name='Match Win %',
+                            name='Game Win %',
                             mode='lines',
                             # legendgroup=p2_player_name,
                             legend="legend2",
@@ -112,7 +112,7 @@ def create_pred_graph(dff, p1_player_name, p2_player_name, p1_char_name, p2_char
 
 def create_pie_match_stats_graph(match_stats_dff, stat_col_name, graph_title, is_percent=False):
     rounds_index = match_stats_dff.index.unique(level='round_index')
-    subplot_titles = ['Full Match', 'Round 1', 'Round 2', 'Round 3']
+    subplot_titles = ['Full Game', 'Round 1', 'Round 2', 'Round 3']
     num_graphs = len(rounds_index)+1
     p1_set_win = match_stats_dff['p1_set_win'].iat[0]
 
@@ -263,7 +263,7 @@ def create_bar_match_stats_graph(match_stats_dff, stat_col_name, graph_title, is
     p1_set_win = match_stats_dff['p1_set_win'].iat[0]
     p2_set_win = not p1_set_win
 
-    rounds = ["Full Match", "Round 1", "Round 2", "Round 3"]
+    rounds = ["Full Game", "Round 1", "Round 2", "Round 3"]
     barnorm = 'percent' if is_percent else ''
     hovertemplate = '<br>%{y:.1f}%' if is_percent else '<br>%{y:.1f}'
     fig = go.Figure(data=[
