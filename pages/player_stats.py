@@ -57,7 +57,7 @@ layout = [
 )
 def populate_player_stats(player_name, rg_selection):
     if player_name == None:
-        return no_update, {'display': 'none'}
+        return [], {'display': 'none'}
     is_game = rg_selection  == 'Game'
     per_game_df: pd.DataFrame
     perGameColumnDefs=[]
@@ -88,7 +88,7 @@ def populate_player_stats(player_name, rg_selection):
     Input('agg-selection', 'value'),
     Input('player-selection', 'value'),
 )
-def populate_player_stats(agg_selection, player_name):
+def populate_agg_player_stats(agg_selection, player_name):
     if player_name == None:
         return [], {'display': 'none'}
     dff_player_game_stats = df_player_game_stats.loc[(player_name)]
