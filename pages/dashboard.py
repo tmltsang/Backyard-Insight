@@ -106,7 +106,7 @@ match_stats = dbc.Card(
         dcc.Dropdown(STAT_OPTIONS, 'burst_count', clearable=False, id='stat-selection', className='dbc'),
         dbc.Label('Graph Type'),
         dcc.Dropdown(['Pie', 'Sunburst', 'Bar'], 'Pie', clearable=False, id='graph-selection', className='dbc'),
-        dcc.Graph(id='match_stats_graph', style={'height': '90vh', 'visibility': 'hidden'}, responsive=True),
+        dcc.Graph(id='match_stats_graph', style={'height': '80vh', 'visibility': 'hidden'}, responsive=True),
     ])
 )
 

@@ -60,7 +60,7 @@ def set_initial_set_value(options):
 )
 def display_match_stats(stat_selection, graph_type, tr, set_num, tournament):
     match_stats_dff = df_match_stats.loc[(tournament, tr, set_num)]
-    return create_match_stats_fig(match_stats_dff, graph_type, stat_selection, STAT_TITLE[stat_selection]), {'height': '90vh', 'visibility': 'visible'}
+    return create_match_stats_fig(match_stats_dff, graph_type, stat_selection, STAT_TITLE[stat_selection]), {'height': '80vh', 'visibility': 'visible'}
 
 @dash.callback(
     [Output('p1_char_portrait', 'children'),
